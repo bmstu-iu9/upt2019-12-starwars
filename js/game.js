@@ -18,13 +18,12 @@ wedge.src = "img/wedge_neutral.png";
 center.src = "img/center.png";
 
 var rotationAngle = Math.PI/50;
+var centerState = 0;
 
 document.addEventListener("keydown", move);
 
 function move(e) {
-
-    //alert(e.keyCode);
-    switch(e.keyCode){
+    switch(e.keyCode) {
         //wedge
         case 65: // KeyA - left
             wA -= rotationAngle;
@@ -73,6 +72,7 @@ function move(e) {
             break;
     }
 }
+
 var wX = 40, wY = 40, wA = Math.PI/2; // Х, У и угол наклона Wedge
 var nX = canvasSize - shipWidth - wX, nY = canvasSize - shipHeight - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
 var cX = canvasSize/2 - centerWidth/2 , cY = canvasSize/2 - centerWidth/2; //X, Y центра
@@ -80,67 +80,74 @@ var dif = 0.001; //расстояние от корабля до центра
 var gravity =  40000; //от гравитации зависит ускорение при приближении к центру,  чем больше - тем быстрее
 
 function gravityStep(){
-  dif =(wX - cX) * (wX - cX) + (wY - cY) * (wY - cY);
-  if (Math.abs(cX - wX) < centerWidth/2 && Math.abs(cY - wY) < centerHeight/2 ) {
-    alert("Wedge died =(");
-    location.reload();
-  }
-  if (cX > wX) {
-    wX += (gravity/dif);
-  } else {
-    if (cX != wX) {
-      wX-=(gravity/dif);
+    dif =(wX - cX) * (wX - cX) + (wY - cY) * (wY - cY);
+    if (Math.abs(cX - wX) < centerWidth/2 && Math.abs(cY - wY) < centerHeight/2 ) {
+        alert("Wedge died =(");
+        location.reload();
     }
-  }
-  if (cY > wY) {
-    wY += (gravity/dif);
-  } else {
-    if (cY != wY){
-    wY -= (gravity/dif);
+    if (cX > wX) {
+        wX += (gravity/dif);
+    } else {
+        if (cX != wX) {
+            wX-=(gravity/dif);
+        }
     }
-  }
-
-  dif = (nX - cX) * (nX - cX) + (nY - cY) * (nY - cY);
-  if (Math.abs(cX - nX) < centerWidth/2 && Math.abs(cY - nY) < centerHeight/2 ) {
-    alert("Needle died =(");
-    location.reload();
-  }
-  if (cX > nX) {
-    nX += (gravity/dif);
-  } else {
-    if (cX != nX) {
-    nX -= (gravity/dif);
+    if (cY > wY) {
+        wY += (gravity/dif);
+    } else {
+        if (cY != wY){
+            wY -= (gravity/dif);
+        }
     }
-  }
-  if (cY > nY) {
-    nY += (gravity/dif);
-  } else {
-    if (cY != nY){
-    nY -= (gravity/dif);
-  }
-  }
-
+    dif = (nX - cX) * (nX - cX) + (nY - cY) * (nY - cY);
+    if (Math.abs(cX - nX) < centerWidth/2 && Math.abs(cY - nY) < centerHeight/2 ) {
+        alert("Needle died =(");
+        location.reload();
+    }
+    if (cX > nX) {
+        nX += (gravity/dif);
+    } else {
+        if (cX != nX) {
+            nX -= (gravity/dif);
+        }
+    }
+    if (cY > nY) {
+        nY += (gravity/dif);
+    } else {
+        if (cY != nY){
+            nY -= (gravity/dif);
+        }
+    }
 }
 
-
 function draw() {
-  ctx.drawImage(bg, 0, 0);
-  ctx.save();
-  ctx.translate(wX + shipWidth/2,wY+shipHeight/2);
-  ctx.rotate(wA);
-  ctx.translate(- wX - shipWidth/2,-wY-shipHeight/2);
-  ctx.drawImage(wedge, wX,wY);
-  ctx.restore();
-  ctx.save();
-  ctx.translate(nX + shipWidth/2,nY+shipHeight/2);
-  ctx.rotate(nA);
-  ctx.translate(- nX - shipWidth/2,-nY-shipHeight/2);
-  ctx.drawImage(needle, nX,nY);
-  ctx.restore();
-  ctx.drawImage(center, cX,cY);
-  gravityStep();
-  requestAnimationFrame(draw);
-
+    ctx.drawImage(bg, 0, 0);
+    ctx.save();
+    ctx.translate(wX + shipWidth/2, wY + shipHeight/2);
+    ctx.rotate(wA);
+    ctx.translate(- wX - shipWidth/2, - wY - shipHeight/2);
+    ctx.drawImage(wedge, wX, wY);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(nX + shipWidth/2, nY + shipHeight/2);
+    ctx.rotate(nA);
+    ctx.translate(- nX - shipWidth/2, - nY - shipHeight/2);
+    ctx.drawImage(needle, nX,nY);
+    ctx.restore();
+    if (centerState < 20 || centerState == 40) {
+        ctx.save();
+        ctx.translate(canvasSize/2, canvasSize/2);
+        ctx.rotate(Math.PI/4);
+        ctx.drawImage(center, -centerWidth/2, -centerHeight/2);
+        ctx.restore();
+        if (centerState < 20) centerState++;
+        else centerState = 1;
+    } else {
+        ctx.drawImage(center, cX, cY);
+        centerState++;
+    }
+    gravityStep();
+    requestAnimationFrame(draw);
 }
 
 center.onload = draw;
