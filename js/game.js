@@ -2,8 +2,8 @@ var cvs = document.getElementById("canvas");
 var ctx = cvs.getContext("2d");
 
 var bg = new Image();
-var needle = new Image();
-var wedge = new Image();
+var wedge = [];
+var needle = [];
 var center = new Image();
 
 //IMAGE SIZES
@@ -13,12 +13,26 @@ var centerWidth = 25, centerHeight = 25;
 
 //sources
 bg.src = "img/bg.png";
-needle.src = "img/needle_neutral.png";
-wedge.src = "img/wedge_neutral.png";
+for (let i = 0; i < 6; i++) {
+    wedge[i] = new Image();
+    needle[i] =  new Image();
+}
+wedge[0].src = "img/wedge_neutral.png";
+wedge[1].src = "img/wedge_nitro1.png";
+wedge[2].src = "img/wedge_nitro2.png";
+wedge[3].src = "img/wedge_nitro3.png";
+wedge[4].src = "img/wedge_nitro4.png";
+wedge[5].src = "img/wedge_nitro5.png";
+needle[0].src = "img/needle_neutral.png";
+needle[1].src = "img/needle_nitro1.png";
+needle[2].src = "img/needle_nitro2.png";
+needle[3].src = "img/needle_nitro3.png";
+needle[4].src = "img/needle_nitro4.png";
+needle[5].src = "img/needle_nitro5.png";
 center.src = "img/center.png";
 
 var rotationAngle = Math.PI/50;
-var centerState = 0;
+var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 
 document.addEventListener("keydown", move);
 
@@ -46,6 +60,7 @@ function move(e) {
             } else {
               wX += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)));
             }
+            if (wedgeNitroState == 0) wedgeNitroState = 1;
             break;
         //needle
         case 74: // KeyJ - left
@@ -69,6 +84,20 @@ function move(e) {
             } else {
               nX += Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA)));
             }
+            if (needleNitroState == 0) needleNitroState = 1;
+            break;
+    }
+}
+
+document.addEventListener("keyup", stop);
+
+function stop(e) {
+    switch(e.keyCode) {
+        case 83:
+            wedgeNitroState = 0;
+            break;
+        case 75:
+            needleNitroState = 0;
             break;
     }
 }
@@ -126,13 +155,15 @@ function draw() {
     ctx.translate(wX + shipWidth/2, wY + shipHeight/2);
     ctx.rotate(wA);
     ctx.translate(- wX - shipWidth/2, - wY - shipHeight/2);
-    ctx.drawImage(wedge, wX, wY);
+    if (wedgeNitroState > 0 && wedgeNitroState <= 20) wedgeNitroState++;
+    ctx.drawImage(wedge[Math.floor(wedgeNitroState/5)], wX, wY);
     ctx.restore();
     ctx.save();
     ctx.translate(nX + shipWidth/2, nY + shipHeight/2);
     ctx.rotate(nA);
     ctx.translate(- nX - shipWidth/2, - nY - shipHeight/2);
-    ctx.drawImage(needle, nX,nY);
+    if (needleNitroState > 0 && needleNitroState <= 20) needleNitroState++;
+    ctx.drawImage(needle[Math.floor(needleNitroState/5)], nX, nY);
     ctx.restore();
     if (centerState < 20 || centerState == 40) {
         ctx.save();
