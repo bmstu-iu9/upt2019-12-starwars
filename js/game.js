@@ -1,17 +1,21 @@
 var cvs = document.getElementById("canvas");
 var ctx = cvs.getContext("2d");
+var canvasSize = 800;
+
+
+
+//IMAGES
+//  size
+
+var shipWidth = 70, shipHeight = 28;
+var centerWidth = 25, centerHeight = 25;
+
+//  sources
 
 var bg = [];
 var wedge = [];
 var needle = [];
 var center = new Image();
-
-//IMAGE SIZES
-var canvasSize = 800;
-var shipWidth = 70, shipHeight = 28;
-var centerWidth = 25, centerHeight = 25;
-
-//sources
 
 for (let i = 0; i < 5; i++) {
     bg[i] = new Image();
@@ -42,7 +46,9 @@ needle[4].src = "img/needle/needle_nitro4.png";
 needle[5].src = "img/needle/needle_nitro5.png";
 center.src = "img/center.png";
 
-var rotationAngle = Math.PI/50;
+//CONTROLS
+
+var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [];
 
@@ -122,6 +128,7 @@ var cX = canvasSize/2 - centerWidth/2 , cY = canvasSize/2 - centerWidth/2; //X, 
 var dif = 0.001; //расстояние от корабля до центра
 var gravity =  40000; //от гравитации зависит ускорение при приближении к центру,  чем больше - тем быстрее
 
+//GRAVITY
 function gravityStep(){
     dif =(wX - cX) * (wX - cX) + (wY - cY) * (wY - cY);
     if (Math.abs(cX - wX) < centerWidth/2 && Math.abs(cY - wY) < centerHeight/2 ) {
@@ -143,15 +150,21 @@ function gravityStep(){
     else if (cY != nY) nY -= (gravity/dif);
 }
 
-let bgX = 0, cond = 0, step = 5;
 
+//DRAWINGS
+let bgX = 0, cond = 0, step = 5; //координата фона, текущее состояние и скорость мерцания
 function draw() {
+
+    //backgrownd
     ctx.drawImage(bg[Math.floor(cond / 100)], bgX, 0);
     cond += step;
     if (cond == 400 || cond  == 0) step *= -1;
-    bgX -= 0.1;
+    bgX -= 0.1; // скорость прокрутки фона по горизонтали
     if (bgX == -4096) bgX = 0;
     ctx.save();
+
+    //ships' rotation
+        //wedge
     ctx.translate(wX + shipWidth/2, wY + shipHeight/2);
     ctx.rotate(wA);
     ctx.translate(- shipWidth/2, - shipHeight/2);
@@ -159,12 +172,15 @@ function draw() {
     ctx.drawImage(wedge[Math.floor(wedgeNitroState/5)], 0, 0);
     ctx.restore();
     ctx.save();
+        //needle
     ctx.translate(nX + shipWidth/2, nY + shipHeight/2);
     ctx.rotate(nA);
     ctx.translate(- shipWidth/2, - shipHeight/2);
     if (needleNitroState > 0 && needleNitroState <= 20) needleNitroState++;
     ctx.drawImage(needle[Math.floor(needleNitroState/5)], 0, 0);
     ctx.restore();
+
+    //center's rotation
     if (centerState < 20 || centerState == 40) {
         ctx.save();
         ctx.translate(canvasSize/2, canvasSize/2);
@@ -177,6 +193,7 @@ function draw() {
         ctx.drawImage(center, cX, cY);
         centerState++;
     }
+    //gravity effect
     gravityStep();
     requestAnimationFrame(draw);
 }
