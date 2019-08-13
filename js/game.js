@@ -8,7 +8,7 @@ var center = new Image();
 
 //IMAGE SIZES
 var canvasSize = 800;
-var shipWidth =  70, shipHeight = 28;
+var shipWidth = 70, shipHeight = 28;
 var centerWidth = 25, centerHeight = 25;
 
 //sources
@@ -23,11 +23,11 @@ bg[2].src = "img/ep/bg3.png";
 bg[3].src = "img/ep/bg4.png";
 bg[4].src = "img/ep/bg5.png";
 
-
 for (let i = 0; i < 6; i++) {
     wedge[i] = new Image();
     needle[i] =  new Image();
 }
+
 wedge[0].src = "img/wedge/wedge_neutral.png";
 wedge[1].src = "img/wedge/wedge_nitro1.png";
 wedge[2].src = "img/wedge/wedge_nitro2.png";
@@ -46,109 +46,66 @@ var rotationAngle = Math.PI/50;
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [];
 
-/*function move(e) {
-    switch(e.keyCode) {
-        //wedge
-        case 65: // KeyA - left
-            wA -= rotationAngle;
-            while (wA < 0) wA += 2*Math.PI;
-            break;
-        case 68: // KeyD - right
-            wA += rotationAngle;
-            while (wA > 2*Math.PI) wA -= 2*Math.PI;
-            break;
-        case 87: // KeyW - bang
-            break;
-        case 83: // KeyS - nitro
-            if (0 <= wA && wA <= Math.PI) {
-              wY += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))));
-            } else {
-              wY -= Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))));
-            }
-            if (Math.PI/2 <= wA && wA <=3*Math.PI/2) {
-              wX -= Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)));
-            } else {
-              wX += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)));
-            }
-            if (wedgeNitroState == 0) wedgeNitroState = 1;
-            break;
-        //needle
-        case 74: // KeyJ - left
-            nA -= rotationAngle;
-            while (nA < 0) nA += 2*Math.PI;
-            break;
-        case 76: // KeyL - right
-            nA += rotationAngle;
-            while (nA > 2*Math.PI) nA -= 2*Math.PI;
-            break;
-        case 73: // KeyI - bang
-            break;
-        case 75: // KeyK - nitro
-            if (0 <= nA && nA <= Math.PI) {
-              nY += Math.abs(Math.tan(nA)*Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA))));
-            } else {
-              nY -= Math.abs(Math.tan(nA)*Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA))));
-            }
-            if (Math.PI/2 <= nA && nA <= 3*Math.PI/2) {
-              nX -= Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA)));
-            } else {
-              nX += Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA)));
-            }
-            if (needleNitroState == 0) needleNitroState = 1;
-            break;
-    }
-}*/
-
 function keysControl() {
-        //Wedge
-        if (keys[65]) { // KeyA - left
-            wA -= rotationAngle;
-            while (wA < 0) wA += 2*Math.PI;
+    // Wedge
+    // KeyA down - left
+    if (keys[65]) {
+        wA -= rotationAngle;
+        while (wA < 0) wA += 2*Math.PI;
+    }
+    // KeyD down - right
+    if (keys[68]) {
+        wA += rotationAngle;
+        while (wA > 2*Math.PI) wA -= 2*Math.PI;
+    }
+    // KeyW down - bang
+    //if (keys[87]) {}
+    // KeyS down - nitro
+    if (keys[83]) {
+        if (0 <= wA && wA <= Math.PI) {
+            wY += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))));
+        } else {
+            wY -= Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))));
         }
-        if (keys[68]) { // KeyD - right
-            wA += rotationAngle;
-            while (wA > 2*Math.PI) wA -= 2*Math.PI;
-        }
-        //if (keys[87]) { // KeyW - bang
-        if (keys[83]) { // KeyS - nitro
-            if (0 <= wA && wA <= Math.PI) {
-              wY += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))));
-            } else {
-              wY -= Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))));
-            }
-            if (Math.PI/2 <= wA && wA <=3*Math.PI/2) {
-              wX -= Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)));
-            } else {
+        if (Math.PI/2 <= wA && wA <=3*Math.PI/2) {
+            wX -= Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)));
+        } else {
               wX += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)));
             }
-            if (wedgeNitroState == 0) wedgeNitroState = 1;
+        if (wedgeNitroState == 0) wedgeNitroState = 1;
+    }
+    // KeyS up - nitro off
+    if (!keys[83]) wedgeNitroState = 0;
+    // Needle
+    // KeyJ down - left
+    if (keys[74]) {
+        nA -= rotationAngle;
+        while (nA < 0) nA += 2*Math.PI;
+    }
+    // KeyL down - right
+    if (keys[76]) {
+        nA += rotationAngle;
+        while (nA > 2*Math.PI) nA -= 2*Math.PI;
+    }
+    // KeyI down - bang
+    //if (keys[73]) {}
+    // KeyK down - nitro
+    if (keys[75]) {
+        if (0 <= nA && nA <= Math.PI) {
+            nY += Math.abs(Math.tan(nA)*Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA))));
+        } else {
+            nY -= Math.abs(Math.tan(nA)*Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA))));
         }
-        if (!keys[83]) wedgeNitroState = 0;
-        //needle
-        if (keys[74]) { // KeyJ - left
-            nA -= rotationAngle;
-            while (nA < 0) nA += 2*Math.PI;
+        if (Math.PI/2 <= nA && nA <= 3*Math.PI/2) {
+            nX -= Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA)));
+        } else {
+            nX += Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA)));
         }
-        if (keys[76]) { // KeyL - right
-            nA += rotationAngle;
-            while (nA > 2*Math.PI) nA -= 2*Math.PI;
-        }
-        //if (keys[73]) { // KeyI - bang
-        if (keys[75]) { // KeyK - nitro
-            if (0 <= nA && nA <= Math.PI) {
-              nY += Math.abs(Math.tan(nA)*Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA))));
-            } else {
-              nY -= Math.abs(Math.tan(nA)*Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA))));
-            }
-            if (Math.PI/2 <= nA && nA <= 3*Math.PI/2) {
-              nX -= Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA)));
-            } else {
-              nX += Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA)));
-            }
-            if (needleNitroState == 0) needleNitroState = 1;
-        }
-        if (!keys[75]) needleNitroState = 0;
-        setTimeout(keysControl, 10);
+        if (needleNitroState == 0) needleNitroState = 1;
+    }
+    // KeyK up - nitro off
+    if (!keys[75]) needleNitroState = 0;
+    setTimeout(keysControl, 10);
 }
 
 document.addEventListener("keydown", function(e) {
@@ -158,17 +115,6 @@ document.addEventListener("keydown", function(e) {
 document.addEventListener("keyup", function(e) {
     keys[e.keyCode] = false;
 });
-
-/*function stop(e) {
-    switch(e.keyCode) {
-        case 83:
-            wedgeNitroState = 0;
-            break;
-        case 75:
-            needleNitroState = 0;
-            break;
-    }
-}*/
 
 var wX = 15, wY = 36, wA = Math.PI/2; // Х, У и угол наклона Wedge
 var nX = canvasSize - shipWidth - wX, nY = canvasSize - shipHeight - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
@@ -182,45 +128,24 @@ function gravityStep(){
         alert("Wedge died =(");
         location.reload();
     }
-    if (cX > wX) {
-        wX += (gravity/dif);
-    } else {
-        if (cX != wX) {
-            wX-=(gravity/dif);
-        }
-    }
-    if (cY > wY) {
-        wY += (gravity/dif);
-    } else {
-        if (cY != wY){
-            wY -= (gravity/dif);
-        }
-    }
+    if (cX > wX) wX += (gravity/dif);
+    else if (cX != wX) wX-=(gravity/dif);
+    if (cY > wY) wY += (gravity/dif);
+    else if (cY != wY) wY -= (gravity/dif);
     dif = (nX - cX) * (nX - cX) + (nY - cY) * (nY - cY);
     if (Math.abs(cX - nX) < centerWidth/2 && Math.abs(cY - nY) < centerHeight/2 ) {
         alert("Needle died =(");
         location.reload();
     }
-    if (cX > nX) {
-        nX += (gravity/dif);
-    } else {
-        if (cX != nX) {
-            nX -= (gravity/dif);
-        }
-    }
-    if (cY > nY) {
-        nY += (gravity/dif);
-    } else {
-        if (cY != nY){
-            nY -= (gravity/dif);
-        }
-    }
+    if (cX > nX) nX += (gravity/dif);
+    else if (cX != nX) nX -= (gravity/dif);
+    if (cY > nY) nY += (gravity/dif);
+    else if (cY != nY) nY -= (gravity/dif);
 }
 
 let bgX = 0, cond = 0, step = 5;
 
 function draw() {
-
     ctx.drawImage(bg[Math.floor(cond / 100)], bgX, 0);
     cond += step;
     if (cond == 400 || cond  == 0) step *= -1;
