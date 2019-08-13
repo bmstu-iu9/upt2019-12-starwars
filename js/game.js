@@ -164,10 +164,11 @@ let bgX = 0, cond = 0, step = 1;
 
 function draw() {
 
-    ctx.drawImage(bg[Math.floor(cond / 10)], bgX, 0);
+    ctx.drawImage(bg[Math.floor(cond / 100)], bgX, 0);
     cond+=step;
-    if (cond == 40 || cond  == 0) step *= -1;
+    if (cond == 400 || cond  == 0) step *= -1;
     bgX-=0.1;
+    if (bgX == -4096) bgX = 0;
     //alert(cond);
 
     //ctx.drawImage(bg[0], 0, 0);
