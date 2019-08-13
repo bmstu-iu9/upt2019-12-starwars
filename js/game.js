@@ -73,7 +73,7 @@ function move(e) {
     }
 }
 
-var wX = -16, wY = 80, wA = Math.PI/2; // Х, У и угол наклона Wedge
+var wX = 15, wY = 31, wA = Math.PI/2; // Х, У и угол наклона Wedge
 var nX = canvasSize - shipWidth - wX, nY = canvasSize - shipHeight - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
 var cX = canvasSize/2 - centerWidth/2 , cY = canvasSize/2 - centerWidth/2; //X, Y центра
 var dif = 0.001; //расстояние от корабля до центра
@@ -123,16 +123,16 @@ function gravityStep(){
 function draw() {
     ctx.drawImage(bg, 0, 0);
     ctx.save();
-    ctx.translate(wX + shipWidth, wY + shipHeight/2);
+    ctx.translate(wX + shipWidth/2, wY + shipHeight/2);
     ctx.rotate(wA);
-    ctx.translate(- shipWidth, - shipHeight/2);
+    ctx.translate(- shipWidth/2, - shipHeight/2);
     ctx.drawImage(wedge, 0, 0);
     ctx.restore();
     ctx.save();
     ctx.translate(nX + shipWidth/2, nY + shipHeight/2);
     ctx.rotate(nA);
-    ctx.translate(- nX - shipWidth/2, - nY - shipHeight/2);
-    ctx.drawImage(needle, nX,nY);
+    ctx.translate(- shipWidth/2, - shipHeight/2);
+    ctx.drawImage(needle, 0, 0);
     ctx.restore();
     if (centerState < 20 || centerState == 40) {
         ctx.save();
