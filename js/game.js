@@ -160,14 +160,14 @@ function gravityStep(){
     }
 }
 
-let bgX = 0, cond = 0, step = 1;
+let bgX = 0, cond = 0, step = 5;
 
 function draw() {
 
     ctx.drawImage(bg[Math.floor(cond / 100)], bgX, 0);
-    cond+=step;
+    cond += step;
     if (cond == 400 || cond  == 0) step *= -1;
-    bgX-=0.1;
+    bgX -= 0.1;
     if (bgX == -4096) bgX = 0;
     //alert(cond);
 
