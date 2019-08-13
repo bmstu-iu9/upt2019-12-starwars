@@ -18,7 +18,7 @@ wedge.src = "img/wedge_neutral.png";
 center.src = "img/center.png";
 
 var rotationAngle = Math.PI/50;
-var centerState = 0;
+var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 
 document.addEventListener("keydown", move);
 
@@ -46,6 +46,7 @@ function move(e) {
             } else {
               wX += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)));
             }
+            if (wedgeNitroState == 0) wedgeNitroState = 1;
             break;
         //needle
         case 74: // KeyJ - left
@@ -69,6 +70,20 @@ function move(e) {
             } else {
               nX += Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA)));
             }
+            if (needleNitroState == 0) needleNitroState = 1;
+            break;
+    }
+}
+
+document.addEventListener("keyup", stop);
+
+function stop(e) {
+    switch(e.keyCode) {
+        case 83:
+            wedgeNitroState = 0;
+            break;
+        case 75:
+            needleNitroState = 0;
             break;
     }
 }
@@ -126,12 +141,41 @@ function draw() {
     ctx.translate(wX + shipWidth/2, wY + shipHeight/2);
     ctx.rotate(wA);
     ctx.translate(- wX - shipWidth/2, - wY - shipHeight/2);
+    if (wedgeNitroState == 0) wedge.src = "img/wedge_neutral.png";
+    else if (wedgeNitroState <= 5) {
+        wedge.src = "img/wedge_nitro1.png";
+        wedgeNitroState++;
+    } else if (wedgeNitroState <= 10) {
+        wedge.src = "img/wedge_nitro2.png";
+        wedgeNitroState++;
+    } else if (wedgeNitroState <= 15) {
+        wedge.src = "img/wedge_nitro3.png";
+        wedgeNitroState++;
+    } else if (wedgeNitroState <= 20) {
+        wedge.src = "img/wedge_nitro4.png";
+        wedgeNitroState++;
+    } else wedge.src = "img/wedge_nitro5.png";
     ctx.drawImage(wedge, wX, wY);
     ctx.restore();
     ctx.save();
     ctx.translate(nX + shipWidth/2, nY + shipHeight/2);
     ctx.rotate(nA);
     ctx.translate(- nX - shipWidth/2, - nY - shipHeight/2);
+    if (needleNitroState == 0)
+        needle.src = "img/needle_neutral.png";
+    else if (needleNitroState <= 5) {
+        needle.src = "img/needle_nitro1.png";
+        needleNitroState++;
+    } else if (needleNitroState <= 10) {
+        needle.src = "img/needle_nitro2.png";
+        needleNitroState++;
+    } else if (needleNitroState <= 15) {
+        needle.src = "img/needle_nitro3.png";
+        needleNitroState++;
+    } else if (needleNitroState <= 20) {
+        needle.src = "img/needle_nitro4.png";
+        needleNitroState++;
+    } else needle.src = "img/needle_nitro5.png";
     ctx.drawImage(needle, nX,nY);
     ctx.restore();
     if (centerState < 20 || centerState == 40) {
