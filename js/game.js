@@ -51,8 +51,11 @@ var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [];
 let nitroPower = 0.05;
 
-let nFx = 0, nFy = 0, nR, M = 100, m = 10;
-let nAx, nAy, nVx = nVy = 0, dt = 1;
+let dt = 1, M = 100, m = 10;
+let nFx = 0, nFy = 0, nR;
+let nAx, nAy, nVx = nVy = 0;
+let wFx = 0, wFy = 0, wR;
+let wAx, wAy, wVx = wVy = 0;
 
 
 function keysControl() {
@@ -72,14 +75,14 @@ function keysControl() {
         // KeyS down - nitro
     if (keys[83]) {
         if (0 <= wA && wA <= Math.PI) {
-            wY += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) / nitroPower;
+            wFy += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) * nitroPower;
         } else {
-            wY -= Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) / nitroPower;
+            wFy -= Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) * nitroPower;
         }
         if (Math.PI/2 <= wA && wA <=3*Math.PI/2) {
-            wX -= Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))) / nitroPower;
+            wFx -= Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))) * nitroPower;
         } else {
-              wX += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))) / nitroPower;
+            wFx += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))) * nitroPower;
             }
         if (wedgeNitroState == 0) wedgeNitroState = 1;
     }
@@ -138,6 +141,8 @@ var gravity =  20000; //от гравитации зависит ускорен�
 
 function gravityStep(){
 
+
+
     nR =  Math.sqrt((nX - cX)  * (nX - cX) + (nY - cY) * (nY - cY));
     if (nR > 4) {
     nFx += -(nX - cX) / Math.sqrt(nR) * M / (nR * nR); // Fx′ = −(x−x′)/√r × M/r²,
@@ -151,6 +156,22 @@ function gravityStep(){
     nY += nVy * dt + nAy * dt * dt / 2; //y* = y = vy·Δt + ay·Δt²/2
     nFx = nFy = 0;
     }
+
+    wR =  Math.sqrt((wX - cX)  * (wX - cX) + (wY - cY) * (wY - cY));
+    if (wR > 4) {
+    wFx += -(wX - cX) / Math.sqrt(wR) * M / (wR * wR); // Fx′ = −(x−x′)/√r × M/r²,
+    wFy += -(wY - cY) / Math.sqrt(wR) * M / (wR * wR); // Fy′ = −(y−y′)/√r × M/r²
+
+    wAx = wFx / m; //ax = Fx/m
+    wAy = wFy / m; //ay = Fy/m
+    wVx += wAx * dt; //vx* = vx + ax·Δt
+    wVy += wAy * dt; //vy* = vy + ay·Δt
+    wX += wVx * dt + wAx * dt * dt / 2; //x* = x + vx·Δt + ax·Δt²/2
+    wY += wVy * dt + wAy * dt * dt / 2; //y* = y = vy·Δt + ay·Δt²/2
+    wFx = wFy = 0;
+    }
+
+
     //if (nX > 800) alert(nR);
     /*dif =(wX - cX) * (wX - cX) + (wY - cY) * (wY - cY);
     if (Math.abs(cX - wX) < centerWidth/2 && Math.abs(cY - wY) < centerHeight/2 ) {
