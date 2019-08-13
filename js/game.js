@@ -1,7 +1,7 @@
 var cvs = document.getElementById("canvas");
 var ctx = cvs.getContext("2d");
 
-var bg = new Image();
+var bg = [];
 var wedge = [];
 var needle = [];
 var center = new Image();
@@ -12,23 +12,34 @@ var shipWidth =  70, shipHeight = 28;
 var centerWidth = 25, centerHeight = 25;
 
 //sources
-bg.src = "img/bg.png";
+
+for (let i = 0; i < 5; i++) {
+    bg[i] = new Image();
+}
+
+bg[0].src = "img/ep/bg1.png";
+bg[1].src = "img/ep/bg2.png";
+bg[2].src = "img/ep/bg3.png";
+bg[3].src = "img/ep/bg4.png";
+bg[4].src = "img/ep/bg5.png";
+
+
 for (let i = 0; i < 6; i++) {
     wedge[i] = new Image();
     needle[i] =  new Image();
 }
-wedge[0].src = "img/wedge_neutral.png";
-wedge[1].src = "img/wedge_nitro1.png";
-wedge[2].src = "img/wedge_nitro2.png";
-wedge[3].src = "img/wedge_nitro3.png";
-wedge[4].src = "img/wedge_nitro4.png";
-wedge[5].src = "img/wedge_nitro5.png";
-needle[0].src = "img/needle_neutral.png";
-needle[1].src = "img/needle_nitro1.png";
-needle[2].src = "img/needle_nitro2.png";
-needle[3].src = "img/needle_nitro3.png";
-needle[4].src = "img/needle_nitro4.png";
-needle[5].src = "img/needle_nitro5.png";
+wedge[0].src = "img/wedge/wedge_neutral.png";
+wedge[1].src = "img/wedge/wedge_nitro1.png";
+wedge[2].src = "img/wedge/wedge_nitro2.png";
+wedge[3].src = "img/wedge/wedge_nitro3.png";
+wedge[4].src = "img/wedge/wedge_nitro4.png";
+wedge[5].src = "img/wedge/wedge_nitro5.png";
+needle[0].src = "img/needle/needle_neutral.png";
+needle[1].src = "img/needle/needle_nitro1.png";
+needle[2].src = "img/needle/needle_nitro2.png";
+needle[3].src = "img/needle/needle_nitro3.png";
+needle[4].src = "img/needle/needle_nitro4.png";
+needle[5].src = "img/needle/needle_nitro5.png";
 center.src = "img/center.png";
 
 var rotationAngle = Math.PI/50;
@@ -149,8 +160,18 @@ function gravityStep(){
     }
 }
 
+let bgX = 0, cond = 0, step = 1;
+
 function draw() {
-    ctx.drawImage(bg, 0, 0);
+
+    ctx.drawImage(bg[Math.floor(cond / 10)], bgX, 0);
+    cond+=step;
+    if (cond == 40 || cond  == 0) step *= -1;
+    bgX-=0.1;
+    //alert(cond);
+
+    //ctx.drawImage(bg[0], 0, 0);
+
     ctx.save();
     ctx.translate(wX + shipWidth/2, wY + shipHeight/2);
     ctx.rotate(wA);
