@@ -49,7 +49,7 @@ center.src = "img/center.png";
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [];
-let nitroPower = 500;
+let nitroPower = 0.05;
 
 let nFx = 0, nFy = 0, nR, M = 100, m = 10;
 let nAx, nAy, nVx = nVy = 0, dt = 1;
@@ -103,14 +103,14 @@ function keysControl() {
     if (keys[75]) {
       nFx = nFy = 0;
         if (0 <= nA && nA <= Math.PI) {
-            nFy += Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) / nitroPower;
+            nFy += Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) * nitroPower;
         } else {
-            nFy -= Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) / nitroPower;
+            nFy -= Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) * nitroPower;
         }
         if (Math.PI/2 <= nA && nA <= 3*Math.PI/2) {
-            nFx -= Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA))) / nitroPower;
+            nFx -= Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA))) * nitroPower;
         } else {
-            nFx += Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA))) / nitroPower;
+            nFx += Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA))) * nitroPower;
         }
         if (needleNitroState == 0) needleNitroState = 1;
     }
@@ -140,15 +140,15 @@ function gravityStep(){
 
     nR =  Math.sqrt((nX - cX)  * (nX - cX) + (nY - cY) * (nY - cY));
     if (nR > 4) {
-    nFx += -(nX - cX) / Math.sqrt(nR) * M / (nR * nR); // Fx′ = −(x−x′)/√r × M/r², no nitro
-    nFy += -(nY - cY) / Math.sqrt(nR) * M / (nR * nR); // Fy′ = −(y−y′)/√r × M/r²   no nitro
+    nFx += -(nX - cX) / Math.sqrt(nR) * M / (nR * nR); // Fx′ = −(x−x′)/√r × M/r²,
+    nFy += -(nY - cY) / Math.sqrt(nR) * M / (nR * nR); // Fy′ = −(y−y′)/√r × M/r²
 
-    nAx = nFx/m; //ax = Fx/m
-    nAy = nFy/m; //ay = Fy/m
-    nVx += nAx*dt;
-    nVy += nAy*dt;
-    nX += nVx*dt + nAx * dt * dt / 2;
-    nY += nVy*dt + nAy * dt * dt / 2;
+    nAx = nFx / m; //ax = Fx/m
+    nAy = nFy / m; //ay = Fy/m
+    nVx += nAx * dt; //vx* = vx + ax·Δt
+    nVy += nAy * dt; //vy* = vy + ay·Δt
+    nX += nVx * dt + nAx * dt * dt / 2; //x* = x + vx·Δt + ax·Δt²/2
+    nY += nVy * dt + nAy * dt * dt / 2; //y* = y = vy·Δt + ay·Δt²/2
     nFx = nFy = 0;
     }
     //if (nX > 800) alert(nR);
