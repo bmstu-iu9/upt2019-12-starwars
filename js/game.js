@@ -44,18 +44,22 @@ needle[4].src = "img/needle/needle_nitro4.png";
 needle[5].src = "img/needle/needle_nitro5.png";
 center.src = "img/center.png";
 
-//CONTROLS
-
+//SERVICE
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [];
-let nitroPower = 0.05;
-
-let dt = 1, M = 100, m = 10;
+let nitroPower = 0.05; //МОЖНО МЕНЯТЬ МОЩНОСТЬ НИТРО, чем больше тем мощнее
+    //gravity helpers
+let dt = 1, M = 100, m = 10; //МОЖНО МЕНЯТЬ ДЛЯ СОЗДАНИЯ БАЛАНСА, дельта время, масса звезды, масса корабля
 let nFx = 0, nFy = 0, nR;
 let nAx, nAy, nVx = nVy = 0;
 let wFx = 0, wFy = 0, wR;
 let wAx, wAy, wVx = wVy = 0;
+
+
+//CONTROLS
+
+
 
 
 function keysControl() {
