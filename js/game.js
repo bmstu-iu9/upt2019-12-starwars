@@ -113,7 +113,7 @@ function stop(e) {
     }
 }
 
-var wX = 40, wY = 40, wA = Math.PI/2; // Х, У и угол наклона Wedge
+var wX = 15, wY = 36, wA = Math.PI/2; // Х, У и угол наклона Wedge
 var nX = canvasSize - shipWidth - wX, nY = canvasSize - shipHeight - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
 var cX = canvasSize/2 - centerWidth/2 , cY = canvasSize/2 - centerWidth/2; //X, Y центра
 var dif = 0.001; //расстояние от корабля до центра
@@ -176,16 +176,16 @@ function draw() {
     ctx.save();
     ctx.translate(wX + shipWidth/2, wY + shipHeight/2);
     ctx.rotate(wA);
-    ctx.translate(- wX - shipWidth/2, - wY - shipHeight/2);
+    ctx.translate(- shipWidth/2, - shipHeight/2);
     if (wedgeNitroState > 0 && wedgeNitroState <= 20) wedgeNitroState++;
-    ctx.drawImage(wedge[Math.floor(wedgeNitroState/5)], wX, wY);
+    ctx.drawImage(wedge[Math.floor(wedgeNitroState/5)], 0, 0);
     ctx.restore();
     ctx.save();
     ctx.translate(nX + shipWidth/2, nY + shipHeight/2);
     ctx.rotate(nA);
-    ctx.translate(- nX - shipWidth/2, - nY - shipHeight/2);
+    ctx.translate(- shipWidth/2, - shipHeight/2);
     if (needleNitroState > 0 && needleNitroState <= 20) needleNitroState++;
-    ctx.drawImage(needle[Math.floor(needleNitroState/5)], nX, nY);
+    ctx.drawImage(needle[Math.floor(needleNitroState/5)], 0, 0);
     ctx.restore();
     if (centerState < 20 || centerState == 40) {
         ctx.save();
