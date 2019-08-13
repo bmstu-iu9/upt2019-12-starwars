@@ -2,8 +2,6 @@ var cvs = document.getElementById("canvas");
 var ctx = cvs.getContext("2d");
 var canvasSize = 800;
 
-
-
 //IMAGES
 //  size
 
@@ -51,61 +49,68 @@ center.src = "img/center.png";
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [];
+let nitroPower = 500;
+
+let nFx = 0, nFy = 0, nR, M = 100, m = 10;
+let nAx, nAy, nVx = nVy = 0, dt = 1;
+
 
 function keysControl() {
     // Wedge
-    // KeyA down - left
+        // KeyA down - left
     if (keys[65]) {
         wA -= rotationAngle;
         while (wA < 0) wA += 2*Math.PI;
     }
-    // KeyD down - right
+        // KeyD down - right
     if (keys[68]) {
         wA += rotationAngle;
         while (wA > 2*Math.PI) wA -= 2*Math.PI;
     }
-    // KeyW down - bang
+        // KeyW down - bang
     //if (keys[87]) {}
-    // KeyS down - nitro
+        // KeyS down - nitro
     if (keys[83]) {
         if (0 <= wA && wA <= Math.PI) {
-            wY += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))));
+            wY += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) / nitroPower;
         } else {
-            wY -= Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))));
+            wY -= Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) / nitroPower;
         }
         if (Math.PI/2 <= wA && wA <=3*Math.PI/2) {
-            wX -= Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)));
+            wX -= Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))) / nitroPower;
         } else {
-              wX += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)));
+              wX += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))) / nitroPower;
             }
         if (wedgeNitroState == 0) wedgeNitroState = 1;
     }
-    // KeyS up - nitro off
+        // KeyS up - nitro off
     if (!keys[83]) wedgeNitroState = 0;
+
     // Needle
     // KeyJ down - left
     if (keys[74]) {
         nA -= rotationAngle;
-        while (nA < 0) nA += 2*Math.PI;
+        while (nA < 0) nA += 2 * Math.PI;
     }
     // KeyL down - right
     if (keys[76]) {
         nA += rotationAngle;
-        while (nA > 2*Math.PI) nA -= 2*Math.PI;
+        while (nA > 2*Math.PI) nA -= 2 * Math.PI;
     }
     // KeyI down - bang
     //if (keys[73]) {}
     // KeyK down - nitro
     if (keys[75]) {
+      nFx = nFy = 0;
         if (0 <= nA && nA <= Math.PI) {
-            nY += Math.abs(Math.tan(nA)*Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA))));
+            nFy += Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) / nitroPower;
         } else {
-            nY -= Math.abs(Math.tan(nA)*Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA))));
+            nFy -= Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) / nitroPower;
         }
         if (Math.PI/2 <= nA && nA <= 3*Math.PI/2) {
-            nX -= Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA)));
+            nFx -= Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA))) / nitroPower;
         } else {
-            nX += Math.sqrt(10/(1+Math.tan(nA)*Math.tan(nA)));
+            nFx += Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA))) / nitroPower;
         }
         if (needleNitroState == 0) needleNitroState = 1;
     }
@@ -126,14 +131,33 @@ var wX = 15, wY = 36, wA = Math.PI/2; // Х, У и угол наклона Wedge
 var nX = canvasSize - shipWidth - wX, nY = canvasSize - shipHeight - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
 var cX = canvasSize/2 - centerWidth/2 , cY = canvasSize/2 - centerWidth/2; //X, Y центра
 var dif = 0.001; //расстояние от корабля до центра
-var gravity =  40000; //от гравитации зависит ускорение при приближении к центру,  чем больше - тем быстрее
+var gravity =  20000; //от гравитации зависит ускорение при приближении к центру,  чем больше - тем быстрее
 
 //GRAVITY
+
+
 function gravityStep(){
-    dif =(wX - cX) * (wX - cX) + (wY - cY) * (wY - cY);
+
+    nR =  Math.sqrt((nX - cX)  * (nX - cX) + (nY - cY) * (nY - cY));
+    if (nR > 4) {
+    nFx += -(nX - cX) / Math.sqrt(nR) * M / (nR * nR); // Fx′ = −(x−x′)/√r × M/r², no nitro
+    nFy += -(nY - cY) / Math.sqrt(nR) * M / (nR * nR); // Fy′ = −(y−y′)/√r × M/r²   no nitro
+
+    nAx = nFx/m; //ax = Fx/m
+    nAy = nFy/m; //ay = Fy/m
+    nVx += nAx*dt;
+    nVy += nAy*dt;
+    nX += nVx*dt + nAx * dt * dt / 2;
+    nY += nVy*dt + nAy * dt * dt / 2;
+    nFx = nFy = 0;
+    }
+    //if (nX > 800) alert(nR);
+    /*dif =(wX - cX) * (wX - cX) + (wY - cY) * (wY - cY);
     if (Math.abs(cX - wX) < centerWidth/2 && Math.abs(cY - wY) < centerHeight/2 ) {
-        alert("Wedge died =(");
-        location.reload();
+        //alert("Wedge died =(");
+        //location.reload();
+        wX = 70;
+        wY = 70;
     }
     if (cX > wX) wX += (gravity/dif);
     else if (cX != wX) wX-=(gravity/dif);
@@ -141,13 +165,19 @@ function gravityStep(){
     else if (cY != wY) wY -= (gravity/dif);
     dif = (nX - cX) * (nX - cX) + (nY - cY) * (nY - cY);
     if (Math.abs(cX - nX) < centerWidth/2 && Math.abs(cY - nY) < centerHeight/2 ) {
-        alert("Needle died =(");
-        location.reload();
+        //alert("Needle died =(");
+        //location.reload();
+        nX = canvasSize-70-shipWidth;
+        nY = canvasSize-70-shipWidth;
     }
     if (cX > nX) nX += (gravity/dif);
     else if (cX != nX) nX -= (gravity/dif);
     if (cY > nY) nY += (gravity/dif);
     else if (cY != nY) nY -= (gravity/dif);
+    */
+
+
+
 }
 
 
