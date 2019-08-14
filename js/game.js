@@ -48,9 +48,11 @@ center.src = "img/center.png";
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [];
-let nitroPower = 0.05; //МОЖНО МЕНЯТЬ МОЩНОСТЬ НИТРО, чем больше тем мощнее
+let nitroPower = 0.05; //МОЩНОСТЬ НИТРО, чем больше тем сильнее тяга
+    //loop helpers
+let loopStep = 40; // 28 <= loopStep <= 70
     //gravity helpers
-let dt = 1, M = 100, m = 10; //МОЖНО МЕНЯТЬ ДЛЯ СОЗДАНИЯ БАЛАНСА, дельта время, масса звезды, масса корабля
+let dt = 1, M = 100, m = 10; //Дельта время, масса звезды, масса корабля
 let nFx = 0, nFy = 0, nR;
 let nAx, nAy, nVx = nVy = 0;
 let wFx = 0, wFy = 0, wR;
@@ -58,9 +60,6 @@ let wAx, wAy, wVx = wVy = 0;
 
 
 //CONTROLS
-
-
-
 
 function keysControl() {
     // Wedge
@@ -137,74 +136,58 @@ document.addEventListener("keyup", function(e) {
 var wX = 15, wY = 36, wA = Math.PI/2; // Х, У и угол наклона Wedge
 var nX = canvasSize - shipWidth - wX, nY = canvasSize - shipHeight - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
 var cX = canvasSize/2 - centerWidth/2 , cY = canvasSize/2 - centerWidth/2; //X, Y центра
-var dif = 0.001; //расстояние от корабля до центра
-var gravity =  20000; //от гравитации зависит ускорение при приближении к центру,  чем больше - тем быстрее
+let k = canvasSize/2 - 1.5* centerWidth;
 
 //GRAVITY
 
-
 function gravityStep(){
 
+    nR =  Math.sqrt((nX - k)  * (nX - k) + (nY - k) * (nY - k));
+    if (Math.abs(nR) > 4) {
+          nFx += -(nX - k) / Math.sqrt(nR) * M / (nR * nR); // Fx′ = −(x−x′)/√r × M/r²,
+          nFy += -(nY - k) / Math.sqrt(nR) * M / (nR * nR); // Fy′ = −(y−y′)/√r × M/r²
 
+          nAx = nFx / m; //ax = Fx/m
+          nAy = nFy / m; //ay = Fy/m
+          nVx += nAx * dt; //vx* = vx + ax·Δt
+          nVy += nAy * dt; //vy* = vy + ay·Δt
+          nX += nVx * dt + nAx * dt * dt / 2; //x* = x + vx·Δt + ax·Δt²/2
+          nY += nVy * dt + nAy * dt * dt / 2; //y* = y = vy·Δt + ay·Δt²/2
+          nFx = nFy = 0;
+          }
 
-    nR =  Math.sqrt((nX - cX)  * (nX - cX) + (nY - cY) * (nY - cY));
-    if (nR > 4) {
-    nFx += -(nX - cX) / Math.sqrt(nR) * M / (nR * nR); // Fx′ = −(x−x′)/√r × M/r²,
-    nFy += -(nY - cY) / Math.sqrt(nR) * M / (nR * nR); // Fy′ = −(y−y′)/√r × M/r²
+          wR =  Math.sqrt((wX - k)  * (wX - k) + (wY - k) * (wY - k));
+          if (wR > 4) {
+          wFx += -(wX - k) / Math.sqrt(wR) * M / (wR * wR); // Fx′ = −(x−x′)/√r × M/r²,
+          wFy += -(wY - k) / Math.sqrt(wR) * M / (wR * wR); // Fy′ = −(y−y′)/√r × M/r²
 
-    nAx = nFx / m; //ax = Fx/m
-    nAy = nFy / m; //ay = Fy/m
-    nVx += nAx * dt; //vx* = vx + ax·Δt
-    nVy += nAy * dt; //vy* = vy + ay·Δt
-    nX += nVx * dt + nAx * dt * dt / 2; //x* = x + vx·Δt + ax·Δt²/2
-    nY += nVy * dt + nAy * dt * dt / 2; //y* = y = vy·Δt + ay·Δt²/2
-    nFx = nFy = 0;
+          wAx = wFx / m; //ax = Fx/ma
+          wAy = wFy / m; //ay = Fy/m
+          wVx += wAx * dt; //vx* = vx + ax·Δt
+          wVy += wAy * dt; //vy* = vy + ay·Δt
+          wX += wVx * dt + wAx * dt * dt / 2; //x* = x + vx·Δt + ax·Δt²/2
+          wY += wVy * dt + wAy * dt * dt / 2; //y* = y = vy·Δt + ay·Δt²/2
+          wFx =  wFy = 0;
     }
-
-    wR =  Math.sqrt((wX - cX)  * (wX - cX) + (wY - cY) * (wY - cY));
-    if (wR > 4) {
-    wFx += -(wX - cX) / Math.sqrt(wR) * M / (wR * wR); // Fx′ = −(x−x′)/√r × M/r²,
-    wFy += -(wY - cY) / Math.sqrt(wR) * M / (wR * wR); // Fy′ = −(y−y′)/√r × M/r²
-
-    wAx = wFx / m; //ax = Fx/m
-    wAy = wFy / m; //ay = Fy/m
-    wVx += wAx * dt; //vx* = vx + ax·Δt
-    wVy += wAy * dt; //vy* = vy + ay·Δt
-    wX += wVx * dt + wAx * dt * dt / 2; //x* = x + vx·Δt + ax·Δt²/2
-    wY += wVy * dt + wAy * dt * dt / 2; //y* = y = vy·Δt + ay·Δt²/2
-    wFx = wFy = 0;
-    }
-
-
-    //if (nX > 800) alert(nR);
-    /*dif =(wX - cX) * (wX - cX) + (wY - cY) * (wY - cY);
-    if (Math.abs(cX - wX) < centerWidth/2 && Math.abs(cY - wY) < centerHeight/2 ) {
-        //alert("Wedge died =(");
-        //location.reload();
-        wX = 70;
-        wY = 70;
-    }
-    if (cX > wX) wX += (gravity/dif);
-    else if (cX != wX) wX-=(gravity/dif);
-    if (cY > wY) wY += (gravity/dif);
-    else if (cY != wY) wY -= (gravity/dif);
-    dif = (nX - cX) * (nX - cX) + (nY - cY) * (nY - cY);
-    if (Math.abs(cX - nX) < centerWidth/2 && Math.abs(cY - nY) < centerHeight/2 ) {
-        //alert("Needle died =(");
-        //location.reload();
-        nX = canvasSize-70-shipWidth;
-        nY = canvasSize-70-shipWidth;
-    }
-    if (cX > nX) nX += (gravity/dif);
-    else if (cX != nX) nX -= (gravity/dif);
-    if (cY > nY) nY += (gravity/dif);
-    else if (cY != nY) nY -= (gravity/dif);
-    */
-
-
-
 }
 
+
+
+function isLoop(){ //Зацикливание кораблей, шаг см. в SERVICE
+
+  //wedge
+  if (wX > canvasSize + loopStep) wX = -loopStep;
+  if (wX < -loopStep) wX = canvasSize + loopStep;
+  if (wY > canvasSize + loopStep) wY = -loopStep;
+  if (wY < -loopStep) wY = canvasSize + loopStep;
+
+  //needle
+  if (nX > canvasSize + loopStep) nX = -loopStep;
+  if (nX < -loopStep) nX = canvasSize + loopStep;
+  if (nY > canvasSize + loopStep) nY = -loopStep;
+  if (nY < -loopStep) nY = canvasSize + loopStep;
+
+}
 
 //DRAWINGS
 let bgX = 0, cond = 0, step = 5; //координата фона, текущее состояние и скорость мерцания
@@ -250,6 +233,7 @@ function draw() {
     }
     //gravity effect
     gravityStep();
+    isLoop();
     requestAnimationFrame(draw);
 }
 
