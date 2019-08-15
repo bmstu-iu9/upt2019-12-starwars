@@ -6,6 +6,7 @@ var canvasSize = 800;
 //  size
 
 var shipWidth = 70, shipHeight = 28;
+var shotWidth = 6, shotHeight = 1;
 var centerWidth = 25, centerHeight = 25;
 
 //  sources
@@ -14,6 +15,7 @@ var bg = [];
 var wedge = [];
 var needle = [];
 var center = new Image();
+var shot = new Image();
 
 for (let i = 0; i < 5; i++) {
     bg[i] = new Image();
@@ -43,12 +45,15 @@ needle[3].src = "img/needle/needle_nitro3.png";
 needle[4].src = "img/needle/needle_nitro4.png";
 needle[5].src = "img/needle/needle_nitro5.png";
 center.src = "img/center.png";
+shot.src = "img/shot.png";
 
 //SERVICE
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
-var keys = [];
-let nitroPower = 0.05; //МОЩНОСТЬ НИТРО, чем больше тем сильнее тяга
+var keys = [], shots = [];
+var shotMaximumLifeTime = 4000, shotSpeed = 1, rechargeTime = 250;
+var wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
+let nitroPower = 0.05; //МОЩНОСТЬ НИТРО: чем больше, тем сильнее тяга
     //loop helpers
 let loopStep = 40; // 28 <= loopStep <= 70
     //gravity helpers
@@ -73,10 +78,17 @@ function keysControl() {
         wA += rotationAngle;
         while (wA > 2*Math.PI) wA -= 2*Math.PI;
     }
-        // KeyW down - bang
-    //if (keys[87]) {}
+        // KeyW down - shot
+    if (keys[87] && wedgeShotsNumber > 0 && wedgeLastShotTime >= rechargeTime) {
+        shots.push({angle: wA,
+                    x: wX + shipWidth/2 + (shipWidth/2 * Math.cos(wA)) - (shotWidth * Math.cos(wA)),
+                    y: wY + shipHeight/2 + (shipWidth/2 * Math.sin(wA)) - (shotWidth * Math.sin(wA)),
+                    lifeTime: 0});
+        wedgeShotsNumber--;
+        wedgeLastShotTime = 0;
+    }
         // KeyS down - nitro
-    if (keys[83]) {
+    if (keys[83] && wedgeFuelLevel > 0) {
         if (0 <= wA && wA <= Math.PI) {
             wFy += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) * nitroPower;
         } else {
@@ -103,11 +115,19 @@ function keysControl() {
         nA += rotationAngle;
         while (nA > 2*Math.PI) nA -= 2 * Math.PI;
     }
-    // KeyI down - bang
-    //if (keys[73]) {}
+    // KeyI down - shot
+    if (keys[73] && needleShotsNumber > 0 && needleLastShotTime >= rechargeTime) {
+        shots.push({angle: nA,
+                    x: nX + shipWidth/2 + (shipWidth/2 * Math.cos(nA)) - (shotWidth * Math.cos(nA)),
+                    y: nY + shipHeight/2 + (shipWidth/2 * Math.sin(nA)) - (shotWidth * Math.sin(nA)),
+                    lifeTime: 0});
+        //shots.push({angle: nA, x: nX + shipWidth - shotWidth, y: nY + shipHeight/2, lifeTime: 0});
+        needleShotsNumber--;
+        needleLastShotTime = 0;
+    }
     // KeyK down - nitro
-    if (keys[75]) {
-      nFx = nFy = 0;
+    if (keys[75] && needleFuelLevel > 0) {
+        nFx = nFy = 0;
         if (0 <= nA && nA <= Math.PI) {
             nFy += Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) * nitroPower;
         } else {
@@ -122,6 +142,8 @@ function keysControl() {
     }
     // KeyK up - nitro off
     if (!keys[75]) needleNitroState = 0;
+    wedgeLastShotTime += 10;
+    needleLastShotTime += 10;
     setTimeout(keysControl, 10);
 }
 
@@ -132,6 +154,23 @@ document.addEventListener("keydown", function(e) {
 document.addEventListener("keyup", function(e) {
     keys[e.keyCode] = false;
 });
+
+function shotsControl() {
+    let l = shots.length;
+    for (let i = 0; i < l; i++) {
+        shots[i].lifeTime += 10;
+        if (shots[i].lifeTime < shotMaximumLifeTime)
+        {
+            shots[i].x += shotSpeed * Math.cos(shots[i].angle);
+            shots[i].y += shotSpeed * Math.sin(shots[i].angle);
+        } else {
+            shots.splice(i, 1);
+            i--;
+            l--;
+        }
+    }
+    setTimeout(shotsControl, 10);
+}
 
 var wX = 15, wY = 36, wA = Math.PI/2; // Х, У и угол наклона Wedge
 var nX = canvasSize - shipWidth - wX, nY = canvasSize - shipHeight - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
@@ -231,6 +270,16 @@ function draw() {
         ctx.drawImage(center, cX, cY);
         centerState++;
     }
+
+    //shots
+    for (let s of shots) {
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.angle);
+        ctx.drawImage(shot, 0, 0);
+        ctx.restore();
+    }
+
     //gravity effect
     gravityStep();
     isLoop();
@@ -239,3 +288,4 @@ function draw() {
 
 center.onload = draw;
 keysControl();
+shotsControl();
