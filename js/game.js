@@ -9,7 +9,7 @@ var shipWidth = 70, shipHeight = 28;
 var shotWidth = 6, shotHeight = 1;
 var centerWidth = 25, centerHeight = 25;
 
-//  sources
+//  sources ...
 
 var bg = [];
 var wedge = [];
