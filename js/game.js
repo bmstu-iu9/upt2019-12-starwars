@@ -51,7 +51,7 @@ shot.src = "img/shot.png";
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [], shots = [];
-var shotMaximumLifeTime = 4000, shotSpeed = 1, rechargeTime = 250;
+var shotMaximumLifeTime = 4000, shotSpeed = 1, rechargeTime = 500;
 var wedgeFuelLevel = 30000, needleFuelLevel = 30000, wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
 let nitroPower = 0.05; //МОЩНОСТЬ НИТРО: чем больше, тем сильнее тяга
     //loop helpers
