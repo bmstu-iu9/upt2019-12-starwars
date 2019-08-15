@@ -88,7 +88,7 @@ function keysControl() {
         wedgeLastShotTime = 0;
     }
         // KeyS down - nitro
-    if (keys[83] && wedgeFuelLevel > 0) {
+    if (keys[83]) {
         if (0 <= wA && wA <= Math.PI) {
             wFy += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) * nitroPower;
         } else {
@@ -126,7 +126,7 @@ function keysControl() {
         needleLastShotTime = 0;
     }
     // KeyK down - nitro
-    if (keys[75] && needleFuelLevel > 0) {
+    if (keys[75]) {
         nFx = nFy = 0;
         if (0 <= nA && nA <= Math.PI) {
             nFy += Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) * nitroPower;
