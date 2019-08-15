@@ -52,7 +52,7 @@ var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [], shots = [];
 var shotMaximumLifeTime = 4000, shotSpeed = 1, rechargeTime = 500;
-var wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
+var wedgeFuelLevel = 30000, needleFuelLevel = 30000, wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
 let nitroPower = 0.05; //МОЩНОСТЬ НИТРО: чем больше, тем сильнее тяга
     //loop helpers
 let loopStep = 40; // 28 <= loopStep <= 70
@@ -88,7 +88,7 @@ function keysControl() {
         wedgeLastShotTime = 0;
     }
         // KeyS down - nitro
-    if (keys[83]) {
+    if (keys[83] && wedgeFuelLevel > 0) {
         if (0 <= wA && wA <= Math.PI) {
             wFy += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) * nitroPower;
         } else {
@@ -100,6 +100,8 @@ function keysControl() {
             wFx += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))) * nitroPower;
             }
         if (wedgeNitroState == 0) wedgeNitroState = 1;
+        wedgeFuelLevel -= 10;
+        if (wedgeFuelLevel <= 0) keys[83] = false;
     }
         // KeyS up - nitro off
     if (!keys[83]) wedgeNitroState = 0;
@@ -125,7 +127,7 @@ function keysControl() {
         needleLastShotTime = 0;
     }
     // KeyK down - nitro
-    if (keys[75]) {
+    if (keys[75] && needleFuelLevel > 0) {
         nFx = nFy = 0;
         if (0 <= nA && nA <= Math.PI) {
             nFy += Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) * nitroPower;
@@ -138,6 +140,8 @@ function keysControl() {
             nFx += Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA))) * nitroPower;
         }
         if (needleNitroState == 0) needleNitroState = 1;
+        needleFuelLevel -= 10;
+        if (needleFuelLevel <= 0) keys[75] = false;
     }
     // KeyK up - nitro off
     if (!keys[75]) needleNitroState = 0;
