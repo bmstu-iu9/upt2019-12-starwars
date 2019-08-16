@@ -61,7 +61,7 @@ needleNitro.push({x: -22, y: 9});
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [], shots = [];
-var shotMaximumLifeTime = 4000, shotSpeed = 1, rechargeTime = 500;
+var shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 10, shotSpeed = 1, rechargeTime = 500;
 var wedgeFuelLevel = 30000, needleFuelLevel = 30000, wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
 let nitroPower = 0.05; //МОЩНОСТЬ НИТРО: чем больше, тем сильнее тяга
     //loop helpers
@@ -93,7 +93,10 @@ function keysControl() {
         shots.push({angle: wA,
                     x: wX + (wedgeWidth/2 * Math.cos(wA)) - (shotWidth * Math.cos(wA)),
                     y: wY + (wedgeWidth/2 * Math.sin(wA)) - (shotWidth * Math.sin(wA)),
-                    lifeTime: 0});
+                    lifeTime: 0,
+                    exploded: false,
+                    explosionPause: 0,
+                    e: []});
         wedgeShotsNumber--;
         wedgeLastShotTime = 0;
     }
@@ -132,7 +135,10 @@ function keysControl() {
         shots.push({angle: nA,
                     x: nX + (needleWidth/2 * Math.cos(nA)) - (shotWidth * Math.cos(nA)),
                     y: nY + (needleWidth/2 * Math.sin(nA)) - (shotWidth * Math.sin(nA)),
-                    lifeTime: 0});
+                    lifeTime: 0,
+                    exploded: false,
+                    explosionPause: 0,
+                    e: []});
         needleShotsNumber--;
         needleLastShotTime = 0;
     }
@@ -176,7 +182,7 @@ function shotsControl() {
         {
             shots[i].x += shotSpeed * Math.cos(shots[i].angle);
             shots[i].y += shotSpeed * Math.sin(shots[i].angle);
-        } else {
+        } else if (shots[i].explosionPause >= shotMaximumExlposionPause) {
             shots.splice(i, 1);
             i--;
             l--;
@@ -255,11 +261,22 @@ function draw() {
     //shots
     ctx.fillStyle = "white";
     for (let s of shots) {
-        ctx.save();
-        ctx.translate(s.x, s.y);
-        ctx.rotate(s.angle);
-        ctx.fillRect(0, 0, shotWidth, shotHeight);
-        ctx.restore();
+        if (s.lifeTime < shotMaximumLifeTime) {
+            ctx.save();
+            ctx.translate(s.x, s.y);
+            ctx.rotate(s.angle);
+            ctx.fillRect(0, 0, shotWidth, shotHeight);
+            ctx.restore();
+        } else {
+            if (!s.exploded) {
+                for (let i = 0; i < 3; i++)
+                    s.e.push({x: Math.floor(Math.floor(Math.random() * ((s.x + 10) - (s.x - 10))) + (s.x - 10)),
+                              y: Math.floor(Math.floor(Math.random() * ((s.y + 10) - (s.y - 10))) + (s.y - 10))});
+                s.exploded = true;
+            }
+            for (let i = 0; i < 3; i++) ctx.fillRect(s.e[i].x, s.e[i].y, 2, 2);
+            s.explosionPause++;
+        }
     }
 
     //ships' rotation
