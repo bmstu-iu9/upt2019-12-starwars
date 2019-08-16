@@ -5,7 +5,9 @@ var canvasSize = 800;
 //IMAGES
 //  size
 
-var shipWidth = 70, shipHeight = 28;
+var wedgeWidth = 47, wedgeHeight = 23;
+var wedgeOriginDeltaX = 20, wedgeOriginDeltaY = 4;
+var needleWidth = 47, needleHeight = 18;
 var shotWidth = 6, shotHeight = 1;
 var centerWidth = 25, centerHeight = 25;
 
@@ -41,15 +43,14 @@ wedgeNitro.push({x: -22, y: 4});
 
 needle.push({x: 13, y: 0});
 needle.push({x: 20, y: 6});
-needle.push({x: 0, y: 6});
 needle.push({x: 41, y: 6});
 needle.push({x: 47, y: 9});
 needle.push({x: 41, y: 12});
-needle.push({x: 0, y: 12});
 needle.push({x: 20, y: 12});
 needle.push({x: 13, y: 18});
 needle.push({x: 0, y: 18});
-needle.push({x: 0, y: 0});
+needle.push({x: 0, y: 6});
+needle.push({x: 0, y: 12});
 needleNitro.push({x: -8, y: 9});
 needleNitro.push({x: -12, y: 9});
 needleNitro.push({x: -15, y: 9});
@@ -90,8 +91,8 @@ function keysControl() {
         // KeyW down - shot
     if (keys[87] && wedgeShotsNumber > 0 && wedgeLastShotTime >= rechargeTime) {
         shots.push({angle: wA,
-                    x: wX + shipWidth/2 + (shipWidth/2 * Math.cos(wA)) - (shotWidth * Math.cos(wA)),
-                    y: wY + shipHeight/2 + (shipWidth/2 * Math.sin(wA)) - (shotWidth * Math.sin(wA)),
+                    x: wX + (wedgeWidth/2 * Math.cos(wA)) - (shotWidth * Math.cos(wA)),
+                    y: wY + (wedgeWidth/2 * Math.sin(wA)) - (shotWidth * Math.sin(wA)),
                     lifeTime: 0});
         wedgeShotsNumber--;
         wedgeLastShotTime = 0;
@@ -129,8 +130,8 @@ function keysControl() {
     // KeyI down - shot
     if (keys[73] && needleShotsNumber > 0 && needleLastShotTime >= rechargeTime) {
         shots.push({angle: nA,
-                    x: nX + shipWidth/2 + (shipWidth/2 * Math.cos(nA)) - (shotWidth * Math.cos(nA)),
-                    y: nY + shipHeight/2 + (shipWidth/2 * Math.sin(nA)) - (shotWidth * Math.sin(nA)),
+                    x: nX + (needleWidth/2 * Math.cos(nA)) - (shotWidth * Math.cos(nA)),
+                    y: nY + (needleWidth/2 * Math.sin(nA)) - (shotWidth * Math.sin(nA)),
                     lifeTime: 0});
         needleShotsNumber--;
         needleLastShotTime = 0;
@@ -184,10 +185,10 @@ function shotsControl() {
     setTimeout(shotsControl, 10);
 }
 
-var wX = 15, wY = 36, wA = Math.PI/2; // Х, У и угол наклона Wedge
-var nX = canvasSize - shipWidth - wX, nY = canvasSize - shipHeight - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
+var wX = 40, wY = 50, wA = Math.PI/2; // Х, У и угол наклона Wedge
+var nX = canvasSize - wX, nY = canvasSize - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
 var cX = canvasSize/2 - centerWidth/2 , cY = canvasSize/2 - centerWidth/2; //X, Y центра
-let k = canvasSize/2 - 1.5* centerWidth;
+let k = canvasSize/2;
 
 //GRAVITY
 
@@ -250,7 +251,6 @@ function draw() {
     if (cond == 400 || cond  == 0) step *= -1;
     bgX -= 0.1; // скорость прокрутки фона по горизонтали
     if (bgX == -4096) bgX = 0;
-    ctx.save();
 
     //shots
     ctx.fillStyle = "white";
@@ -264,17 +264,18 @@ function draw() {
 
     //ships' rotation
         //wedge
-    ctx.translate(wX + shipWidth/2, wY + shipHeight/2);
+    ctx.save();
+    ctx.translate(wX, wY);
     ctx.rotate(wA);
-    ctx.translate(- shipWidth/2, - shipHeight/2);
+    ctx.translate( - wedgeOriginDeltaX, - wedgeOriginDeltaY);
     if (wedgeNitroState > 0 && wedgeNitroState <= 20) wedgeNitroState++;
     drawWedge();
     ctx.restore();
-    ctx.save();
         //needle
-    ctx.translate(nX + shipWidth/2, nY + shipHeight/2);
+    ctx.save();
+    ctx.translate(nX, nY);
     ctx.rotate(nA);
-    ctx.translate(- shipWidth/2, - shipHeight/2);
+    ctx.translate(- needleWidth/2, - needleHeight/2);
     if (needleNitroState > 0 && needleNitroState <= 20) needleNitroState++;
     drawNeedle();
     ctx.restore();
@@ -329,14 +330,17 @@ function drawNeedle() {
     ctx.beginPath();
     ctx.moveTo(0, 0);
     let n = needle.length;
-    for (let i = 0; i < n; i++) {
-        ctx.lineTo(needle[i].x, needle[i].y);
-        if (i == 1) ctx.moveTo(needle[i+1].x, needle[++i].y);
-        if (i == 6) ctx.moveTo(needle[i+1].x, needle[++i].y);
-    }
-    ctx.moveTo(0, 0);
+    for (let i = 0; i < n - 2; i++) ctx.lineTo(needle[i].x, needle[i].y);
     ctx.closePath();
     ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(needle[n-2].x, needle[n-2].y);
+    ctx.lineTo(needle[1].x, needle[1].y);
+    ctx.moveTo(needle[n-1].x, needle[n-1].y);
+    ctx.lineTo(needle[5].x, needle[5].y);
+    ctx.moveTo(needle[n-2].x, needle[n-2].y);
+    ctx.closePath();
     ctx.stroke();
     if (needleNitroState > 0) {
         ctx.beginPath();
