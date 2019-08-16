@@ -15,7 +15,6 @@ var bg = [];
 var wedge = [], wedgeNitro = [];
 var needle = [], needleNitro = [];
 var center = new Image();
-var shot = new Image();
 
 for (let i = 0; i < 5; i++) {
     bg[i] = new Image();
@@ -27,7 +26,6 @@ bg[2].src = "img/ep/bg3.png";
 bg[3].src = "img/ep/bg4.png";
 bg[4].src = "img/ep/bg5.png";
 center.src = "img/center.png";
-shot.src = "img/shot.png";
 
 needle.push({x: 12, y: 0});
 needle.push({x: 17, y: 5});
@@ -259,6 +257,16 @@ function draw() {
     if (bgX == -4096) bgX = 0;
     ctx.save();
 
+    //shots
+    ctx.fillStyle = "white";
+    for (let s of shots) {
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.angle);
+        ctx.fillRect(0, 0, shotWidth, shotHeight);
+        ctx.restore();
+    }
+
     //ships' rotation
         //wedge
     ctx.translate(wX + shipWidth/2, wY + shipHeight/2);
@@ -288,15 +296,6 @@ function draw() {
     } else {
         ctx.drawImage(center, cX, cY);
         centerState++;
-    }
-
-    //shots
-    for (let s of shots) {
-        ctx.save();
-        ctx.translate(s.x, s.y);
-        ctx.rotate(s.angle);
-        ctx.drawImage(shot, 0, 0);
-        ctx.restore();
     }
 
     //gravity effect
