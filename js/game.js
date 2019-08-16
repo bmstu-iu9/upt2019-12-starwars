@@ -12,8 +12,8 @@ var centerWidth = 25, centerHeight = 25;
 //  sources
 
 var bg = [];
-var wedge = [];
-var needle = [];
+var wedge = [], wedgeNitro = [];
+var needle = [], needleNitro = [];
 var center = new Image();
 var shot = new Image();
 
@@ -26,26 +26,42 @@ bg[1].src = "img/ep/bg2.png";
 bg[2].src = "img/ep/bg3.png";
 bg[3].src = "img/ep/bg4.png";
 bg[4].src = "img/ep/bg5.png";
-
-for (let i = 0; i < 6; i++) {
-    wedge[i] = new Image();
-    needle[i] =  new Image();
-}
-
-wedge[0].src = "img/wedge/wedge_neutral.png";
-wedge[1].src = "img/wedge/wedge_nitro1.png";
-wedge[2].src = "img/wedge/wedge_nitro2.png";
-wedge[3].src = "img/wedge/wedge_nitro3.png";
-wedge[4].src = "img/wedge/wedge_nitro4.png";
-wedge[5].src = "img/wedge/wedge_nitro5.png";
-needle[0].src = "img/needle/needle_neutral.png";
-needle[1].src = "img/needle/needle_nitro1.png";
-needle[2].src = "img/needle/needle_nitro2.png";
-needle[3].src = "img/needle/needle_nitro3.png";
-needle[4].src = "img/needle/needle_nitro4.png";
-needle[5].src = "img/needle/needle_nitro5.png";
 center.src = "img/center.png";
 shot.src = "img/shot.png";
+
+needle.push({x: 12, y: 0});
+needle.push({x: 17, y: 5});
+needle.push({x: 37, y: 5});
+needle.push({x: 42, y: 7});
+needle.push({x: 37, y: 9});
+needle.push({x: 17, y: 9});
+needle.push({x: 12, y: 14});
+needle.push({x: 0, y: 14});
+needle.push({x: 0, y: 10});
+needle.push({x: 12, y: 10});
+needle.push({x: 12, y: 9});
+needle.push({x: 0, y: 9});
+needle.push({x: 0, y: 5});
+needle.push({x: 12, y: 5});
+needle.push({x: 12, y: 4});
+needle.push({x: 0, y: 4});
+needleNitro.push({x: -8, y: 7});
+needleNitro.push({x: -12, y: 7});
+needleNitro.push({x: -15, y: 7});
+needleNitro.push({x: -18, y: 7});
+needleNitro.push({x: -22, y: 7});
+
+wedge.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
+wedge.push({x: 4, y: 12, r: 19, a1: -Math.acos(-1/Math.sqrt(10)), a2: -Math.acos(14/Math.sqrt(365))});
+wedge.push({x: 4, y: -4, r: 19, a1: Math.acos(14/Math.sqrt(365)), a2: Math.acos(-1/Math.sqrt(10))});
+wedge.push({x: 12, y: 27, r: 19, a1: -Math.acos(-14/Math.sqrt(365)), a2: -Math.acos(1/Math.sqrt(10))});
+wedge.push({x: 20, y: 35, r: 40, a1: -Math.acos(-4/Math.sqrt(65)), a2: -Math.acos(25/Math.sqrt(1586))});
+wedge.push({x: 20, y: -27, r: 40, a1: Math.acos(25/Math.sqrt(1586)), a2: Math.acos(-4/Math.sqrt(65))});
+wedgeNitro.push({x: -8, y: 4});
+wedgeNitro.push({x: -12, y: 4});
+wedgeNitro.push({x: -15, y: 4});
+wedgeNitro.push({x: -18, y: 4});
+wedgeNitro.push({x: -22, y: 4});
 
 //SERVICE
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
@@ -249,7 +265,7 @@ function draw() {
     ctx.rotate(wA);
     ctx.translate(- shipWidth/2, - shipHeight/2);
     if (wedgeNitroState > 0 && wedgeNitroState <= 20) wedgeNitroState++;
-    ctx.drawImage(wedge[Math.floor(wedgeNitroState/5)], 0, 0);
+    drawWedge();
     ctx.restore();
     ctx.save();
         //needle
@@ -257,7 +273,7 @@ function draw() {
     ctx.rotate(nA);
     ctx.translate(- shipWidth/2, - shipHeight/2);
     if (needleNitroState > 0 && needleNitroState <= 20) needleNitroState++;
-    ctx.drawImage(needle[Math.floor(needleNitroState/5)], 0, 0);
+    drawNeedle();
     ctx.restore();
 
     //center's rotation
@@ -287,6 +303,50 @@ function draw() {
     gravityStep();
     isLoop();
     requestAnimationFrame(draw);
+}
+
+function drawWedge() {
+    ctx.fillStyle = "black";
+    ctx.strokeStyle = "white";
+    ctx.moveTo(0, 0);
+    let n = wedge.length;
+    for (let i = 0; i < n; i += 2) {
+        ctx.beginPath();
+        ctx.arc(wedge[i].x, wedge[i].y, wedge[i].r, wedge[i].a1, wedge[i].a2, false);
+        ctx.arc(wedge[i+1].x, wedge[i+1].y, wedge[i+1].r, wedge[i+1].a1, wedge[i+1].a2, false);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    }
+    if (wedgeNitroState > 0) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(wedgeNitro[Math.floor(wedgeNitroState/5)].x, wedgeNitro[Math.floor(wedgeNitroState/5)].y);
+        ctx.lineTo(0, 8);
+        ctx.closePath();
+        ctx.fillStyle = "white";
+        ctx.fill();
+    }
+}
+
+function drawNeedle() {
+    ctx.fillStyle = "black";
+    ctx.strokeStyle = "white";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    for (let point of needle) ctx.lineTo(point.x, point.y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    if (needleNitroState > 0) {
+        ctx.beginPath();
+        ctx.moveTo(0, 2);
+        ctx.lineTo(needleNitro[Math.floor(needleNitroState/5)].x, needleNitro[Math.floor(needleNitroState/5)].y);
+        ctx.lineTo(0, 12);
+        ctx.closePath();
+        ctx.fillStyle = "white";
+        ctx.fill();
+    }
 }
 
 center.onload = draw;
