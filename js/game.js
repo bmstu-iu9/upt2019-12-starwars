@@ -27,28 +27,6 @@ bg[3].src = "img/ep/bg4.png";
 bg[4].src = "img/ep/bg5.png";
 center.src = "img/center.png";
 
-needle.push({x: 12, y: 0});
-needle.push({x: 17, y: 5});
-needle.push({x: 37, y: 5});
-needle.push({x: 42, y: 7});
-needle.push({x: 37, y: 9});
-needle.push({x: 17, y: 9});
-needle.push({x: 12, y: 14});
-needle.push({x: 0, y: 14});
-needle.push({x: 0, y: 10});
-needle.push({x: 12, y: 10});
-needle.push({x: 12, y: 9});
-needle.push({x: 0, y: 9});
-needle.push({x: 0, y: 5});
-needle.push({x: 12, y: 5});
-needle.push({x: 12, y: 4});
-needle.push({x: 0, y: 4});
-needleNitro.push({x: -8, y: 7});
-needleNitro.push({x: -12, y: 7});
-needleNitro.push({x: -15, y: 7});
-needleNitro.push({x: -18, y: 7});
-needleNitro.push({x: -22, y: 7});
-
 wedge.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
 wedge.push({x: 4, y: 12, r: 19, a1: -Math.acos(-1/Math.sqrt(10)), a2: -Math.acos(14/Math.sqrt(365))});
 wedge.push({x: 4, y: -4, r: 19, a1: Math.acos(14/Math.sqrt(365)), a2: Math.acos(-1/Math.sqrt(10))});
@@ -60,6 +38,23 @@ wedgeNitro.push({x: -12, y: 4});
 wedgeNitro.push({x: -15, y: 4});
 wedgeNitro.push({x: -18, y: 4});
 wedgeNitro.push({x: -22, y: 4});
+
+needle.push({x: 13, y: 0});
+needle.push({x: 20, y: 6});
+needle.push({x: 0, y: 6});
+needle.push({x: 41, y: 6});
+needle.push({x: 47, y: 9});
+needle.push({x: 41, y: 12});
+needle.push({x: 0, y: 12});
+needle.push({x: 20, y: 12});
+needle.push({x: 13, y: 18});
+needle.push({x: 0, y: 18});
+needle.push({x: 0, y: 0});
+needleNitro.push({x: -8, y: 9});
+needleNitro.push({x: -12, y: 9});
+needleNitro.push({x: -15, y: 9});
+needleNitro.push({x: -18, y: 9});
+needleNitro.push({x: -22, y: 9});
 
 //SERVICE
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
@@ -333,7 +328,13 @@ function drawNeedle() {
     ctx.strokeStyle = "white";
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    for (let point of needle) ctx.lineTo(point.x, point.y);
+    let n = needle.length;
+    for (let i = 0; i < n; i++) {
+        ctx.lineTo(needle[i].x, needle[i].y);
+        if (i == 1) ctx.moveTo(needle[i+1].x, needle[++i].y);
+        if (i == 6) ctx.moveTo(needle[i+1].x, needle[++i].y);
+    }
+    ctx.moveTo(0, 0);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -341,7 +342,7 @@ function drawNeedle() {
         ctx.beginPath();
         ctx.moveTo(0, 2);
         ctx.lineTo(needleNitro[Math.floor(needleNitroState/5)].x, needleNitro[Math.floor(needleNitroState/5)].y);
-        ctx.lineTo(0, 12);
+        ctx.lineTo(0, 16);
         ctx.closePath();
         ctx.fillStyle = "white";
         ctx.fill();
