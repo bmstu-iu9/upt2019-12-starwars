@@ -334,7 +334,7 @@ for (let i = 0; i < 100; i++){
 }
 
 //DRAWINGS
-let bgX = 0, cond = 0, step = 5; //координата фона, текущее состояние и скорость мерцания
+let bgX = 0, cond = 0, stepX = 0.045, stepY = 0.01; //координата фона, текущее состояние и скорость мерцания
 function ExpensivePlanetarium(){
   ctx.fillStyle = "black";
   ctx.fillRect(0,0,800,800);
@@ -344,6 +344,8 @@ function ExpensivePlanetarium(){
   stars1.forEach(function(elem){
     ctx.beginPath();
     ctx.arc(elem.x, elem.y, 1, 0, 2*Math.PI, false);
+    elem.x-=stepX;
+    elem.y-=stepY;
     ctx.fill();
     ctx.stroke();
 
@@ -351,6 +353,8 @@ function ExpensivePlanetarium(){
   stars2.forEach(function(elem){
     ctx.beginPath();
     ctx.arc(elem.x, elem.y, 0.5, 0, 2*Math.PI, false);
+    elem.x-=stepX;
+    elem.y-=stepY;
     ctx.fill();
     ctx.stroke();
 
@@ -359,6 +363,8 @@ function ExpensivePlanetarium(){
   stars3.forEach(function(elem){
     ctx.beginPath();
     ctx.arc(elem.x, elem.y, 0.3, 0, 2*Math.PI, false);
+    elem.x-=stepX;
+    elem.y-=stepY;
     ctx.fill();
     ctx.stroke();
 
@@ -366,6 +372,8 @@ function ExpensivePlanetarium(){
   stars4.forEach(function(elem){
     ctx.beginPath();
     ctx.arc(elem.x, elem.y, 0.1, 0, 2*Math.PI, false);
+    elem.x-=stepX;
+    elem.y-=stepY;
     ctx.fill();
     ctx.stroke();
   });
