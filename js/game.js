@@ -13,20 +13,11 @@ var centerWidth = 25, centerHeight = 25;
 
 //  sources
 
-var bg = [];
 var wedge = [], wedgeNitro = [];
 var needle = [], needleNitro = [];
 var center = new Image();
 
-for (let i = 0; i < 5; i++) {
-    bg[i] = new Image();
-}
 
-bg[0].src = "img/ep/bg1.png";
-bg[1].src = "img/ep/bg2.png";
-bg[2].src = "img/ep/bg3.png";
-bg[3].src = "img/ep/bg4.png";
-bg[4].src = "img/ep/bg5.png";
 center.src = "img/center.png";
 
 wedge.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
@@ -334,7 +325,7 @@ for (let i = 0; i < 100; i++){
 }
 
 //DRAWINGS
-let bgX = 0, cond = 0, stepX = 0.045, stepY = 0.01; //координата фона, текущее состояние и скорость мерцания
+let  stepX = 0.045, stepY = 0.01; //координата фона, текущее состояние и скорость мерцания
 function ExpensivePlanetarium(){
   ctx.fillStyle = "black";
   ctx.fillRect(0,0,800,800);
@@ -346,6 +337,8 @@ function ExpensivePlanetarium(){
     ctx.arc(elem.x, elem.y, 1, 0, 2*Math.PI, false);
     elem.x-=stepX;
     elem.y-=stepY;
+    if (elem.x <= 0) elem.x = 1600;
+    if (elem.y <= 0) elem.x = 1600;
     ctx.fill();
     ctx.stroke();
 
@@ -355,25 +348,34 @@ function ExpensivePlanetarium(){
     ctx.arc(elem.x, elem.y, 0.5, 0, 2*Math.PI, false);
     elem.x-=stepX;
     elem.y-=stepY;
+    if (elem.x <= 0) elem.x = 1600;
+    if (elem.y <= 0) elem.x = 1600;
     ctx.fill();
     ctx.stroke();
 
   });
-
+  ctx.strokeStyle = "gray";
+  ctx.fillStyle = "gray";
   stars3.forEach(function(elem){
     ctx.beginPath();
-    ctx.arc(elem.x, elem.y, 0.3, 0, 2*Math.PI, false);
+    ctx.arc(elem.x, elem.y, 0.4, 0, 2*Math.PI, false);
     elem.x-=stepX;
     elem.y-=stepY;
+    if (elem.x <= 0) elem.x = 1600;
+    if (elem.y <= 0) elem.x = 1600;
     ctx.fill();
     ctx.stroke();
 
   });
+  ctx.strokeStyle = "white";
+  ctx.fillStyle = "white";
   stars4.forEach(function(elem){
     ctx.beginPath();
-    ctx.arc(elem.x, elem.y, 0.1, 0, 2*Math.PI, false);
+    ctx.arc(elem.x, elem.y, 0.2, 0, 2*Math.PI, false);
     elem.x-=stepX;
     elem.y-=stepY;
+    if (elem.x <= 0) elem.x = 1600;
+    if (elem.y <= 0) elem.x = 1600;
     ctx.fill();
     ctx.stroke();
   });
@@ -382,12 +384,6 @@ function ExpensivePlanetarium(){
 }
 function draw() {
 
-    //backgrownd
-    /*ctx.drawImage(bg[Math.floor(cond / 100)], bgX, 0);
-    cond += step;
-    if (cond == 400 || cond  == 0) step *= -1;
-    bgX -= 0.1; // скорость прокрутки фона по горизонтали
-    if (bgX == -4096) bgX = 0; */
     ExpensivePlanetarium();
 
     //shots
@@ -536,9 +532,6 @@ function drawNeedle() {
         ctx.fill();
     }
 }
-
-
-
 
 
   center.onload = draw;
