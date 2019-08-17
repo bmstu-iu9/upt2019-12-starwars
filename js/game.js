@@ -13,20 +13,11 @@ var centerWidth = 25, centerHeight = 25;
 
 //  sources
 
-var bg = [];
 var wedge = [], wedgeNitro = [];
 var needle = [], needleNitro = [];
 var center = new Image();
 
-for (let i = 0; i < 5; i++) {
-    bg[i] = new Image();
-}
 
-bg[0].src = "img/ep/bg1.png";
-bg[1].src = "img/ep/bg2.png";
-bg[2].src = "img/ep/bg3.png";
-bg[3].src = "img/ep/bg4.png";
-bg[4].src = "img/ep/bg5.png";
 center.src = "img/center.png";
 
 wedge.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
@@ -315,17 +306,98 @@ function isLoop(){ //Зацикливание кораблей, шаг см. в 
 
 }
 
+let stars1 = [];
+let stars2 = [];
+let stars3 = [];
+let stars4 = [];
+//1st Magnitude
+for (let i = 0; i < 15; i++){
+    stars1.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+}
+for (let i = 0; i < 15; i++){
+    stars2.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+}
+for (let i = 0; i < 50; i++){
+    stars2.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+}
+for (let i = 0; i < 70; i++){
+    stars3.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+}
+
 //DRAWINGS
-let bgX = 0, cond = 0, step = 5; //координата фона, текущее состояние и скорость мерцания
+let  stepX = 0.1, stepY = 0.001; //скорость прокручивания фона
+
+let color1 = 230, color2 = 50, colorStep1 = -1, colorStep2 = 1; //скорость мерцания звезд на фоне
+function ExpensivePlanetarium(){
+
+  ctx.fillStyle = "black";
+  ctx.fillRect(0,0,800,800);
+
+
+  ctx.strokeStyle = 'rgb(' + color1 + ',' + color1 + ',' + color1 + ')';
+  ctx.fillStyle = ctx.strokeStyle ;
+
+  stars1.forEach(function(elem){
+    ctx.beginPath();
+    ctx.arc(elem.x, elem.y, 1, 0, 2*Math.PI, false);
+    elem.x-=stepX;
+    elem.y-=stepY;
+    if (elem.x <= 0) elem.x = 1000;
+    if (elem.y <= 0) elem.y = 1000;
+    ctx.fill();
+    ctx.stroke();
+
+  });
+  ctx.strokeStyle = 'rgb(' + color2 + ',' + color2 + ',' + color2 + ')';
+  ctx.fillStyle = ctx.strokeStyle ;
+  stars2.forEach(function(elem){
+    ctx.beginPath();
+    ctx.arc(elem.x, elem.y, 0.6, 0, 2*Math.PI, false);
+    elem.x-=stepX;
+    elem.y-=stepY;
+    if (elem.x <= 0) elem.x = 1000;
+    if (elem.y <= 0) elem.y = 1000;
+    ctx.fill();
+    ctx.stroke();
+
+  });
+  ctx.strokeStyle = 'rgb(' + color1 + ',' + color1 + ',' + color1 + ')';
+  ctx.fillStyle = ctx.strokeStyle ;
+
+  stars3.forEach(function(elem){
+    ctx.beginPath();
+    ctx.arc(elem.x, elem.y, 0.3, 0, 2*Math.PI, false);
+    elem.x-=stepX;
+    elem.y-=stepY;
+    if (elem.x <= 0) elem.x = 1000;
+    if (elem.y <= 0) elem.y = 1000;
+    ctx.fill();
+    ctx.stroke();
+
+  });
+  ctx.strokeStyle = 'rgb(' + color2 + ',' + color2 + ',' + color2 + ')';
+  ctx.fillStyle = ctx.strokeStyle ;
+  stars4.forEach(function(elem){
+    ctx.beginPath();
+    ctx.arc(elem.x, elem.y, 0.2, 0, 2*Math.PI, false);
+    elem.x-=stepX;
+    elem.y-=stepY;
+    if (elem.x <= 0) elem.x = 1000;
+    if (elem.y <= 0) elem.y = 1000;
+    ctx.fill();
+    ctx.stroke();
+  });
+
+  color1 += colorStep1;
+  color2 += colorStep2;
+
+  if (color1 < 50 || color1 > 230) colorStep1*=-1;
+  if (color2 < 50 || color2 > 230) colorStep2*=-1;
+
+}
 function draw() {
 
-
-    //backgrownd
-    ctx.drawImage(bg[Math.floor(cond / 100)], bgX, 0);
-    cond += step;
-    if (cond == 400 || cond  == 0) step *= -1;
-    bgX -= 0.1; // скорость прокрутки фона по горизонтали
-    if (bgX == -4096) bgX = 0;
+    ExpensivePlanetarium();
 
     //shots
     ctx.fillStyle = "white";
@@ -474,6 +546,7 @@ function drawNeedle() {
     }
 }
 
-center.onload = draw;
-keysControl();
-shotsControl();
+
+  center.onload = draw;
+  keysControl();
+  shotsControl();
