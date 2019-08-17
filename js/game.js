@@ -344,6 +344,7 @@ function ExpensivePlanetarium(){
     elem.y-=stepY;
     if (elem.x <= 0) elem.x = 1000;
     if (elem.y <= 0) elem.y = 1000;
+    ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
@@ -357,6 +358,7 @@ function ExpensivePlanetarium(){
     elem.y-=stepY;
     if (elem.x <= 0) elem.x = 1000;
     if (elem.y <= 0) elem.y = 1000;
+    ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
@@ -371,6 +373,7 @@ function ExpensivePlanetarium(){
     elem.y-=stepY;
     if (elem.x <= 0) elem.x = 1000;
     if (elem.y <= 0) elem.y = 1000;
+    ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
@@ -384,6 +387,7 @@ function ExpensivePlanetarium(){
     elem.y-=stepY;
     if (elem.x <= 0) elem.x = 1000;
     if (elem.y <= 0) elem.y = 1000;
+    ctx.closePath();
     ctx.fill();
     ctx.stroke();
   });
@@ -474,16 +478,27 @@ function draw() {
     //center's rotation
     if (centerState < 20 || centerState == 40) {
         ctx.save();
-        ctx.translate(canvasSize/2, canvasSize/2);
+        ctx.translate(canvasSize/2, canvasSize/2 - 17);
         ctx.rotate(Math.PI/4);
-        ctx.drawImage(center, -centerWidth/2, -centerHeight/2);
+        drawSun();
+        //ctx.drawImage(center, -centerWidth/2, -centerHeight/2);
         ctx.restore();
         if (centerState < 20) centerState++;
         else centerState = 1;
     } else {
-        ctx.drawImage(center, cX, cY);
+        ctx.save();
+        //ctx.drawImage(center, cX, cY);
+        ctx.translate(sunGap, sunGap);
+        drawSun();
         centerState++;
+        ctx.restore();
     }
+    /*ctx.beginPath();
+    ctx.fillStyle = "green";
+    ctx.arc(400, 400, 3, 0, 2*Math.PI, false);
+    ctx.fill();
+    ctx.closePath();
+    */
 
     //gravity effect
     gravityStep();
@@ -544,6 +559,36 @@ function drawNeedle() {
         ctx.fillStyle = "white";
         ctx.fill();
     }
+}
+
+let sunGap = 388;
+function drawSun(){
+    ctx.fillStyle = "white";
+    ctx.fillStroke = "gray";
+    ctx.beginPath();
+    ctx.arc(11 , 0, 0.2, 2*Math.PI, false);
+    ctx.arc(12, 0, 0.2, 2*Math.PI, false);
+    ctx.arc(13, 10, 0.2, 2*Math.PI, false);
+    ctx.arc(17, 7, 0.2, 2*Math.PI, false);
+    ctx.arc(14, 11, 0.2, 2*Math.PI, false);
+    ctx.arc(24, 12, 0.2, 2*Math.PI, false);
+    ctx.arc(24, 13, 0.2, 2*Math.PI, false);
+    ctx.arc(14, 14, 0.2, 2*Math.PI, false);
+    ctx.arc(17, 18, 0.2, 2*Math.PI, false);
+    ctx.arc(13, 15, 0.2, 2*Math.PI, false);
+    ctx.arc(12, 24, 0.2, 2*Math.PI, false);
+    ctx.arc(11, 24, 0.2, 2*Math.PI, false);
+    ctx.arc(10, 15, 0.2, 2*Math.PI, false);
+    ctx.arc(6, 18, 0.2, 2*Math.PI, false);
+    ctx.arc(9, 14, 0.2, 2*Math.PI, false);
+    ctx.arc(0, 13, 0.2, 2*Math.PI, false);
+    ctx.arc(0, 12, 0.2, 2*Math.PI, false);
+    ctx.arc(9, 11, 0.2, 2*Math.PI, false);
+    ctx.arc(6, 7, 0.2, 2*Math.PI, false);
+    ctx.arc(10, 10, 0.2, 2*Math.PI, false);
+    ctx.fill();
+    ctx.stroke();
+
 }
 
 
