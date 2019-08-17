@@ -81,17 +81,17 @@ let wAx, wAy, wVx = wVy = 0;
 function keysControl() {
     // Wedge
         // KeyA down - left
-    if (keys[65]) {
+    if (keys[65] && wedgeAlive) {
         wA -= rotationAngle;
         while (wA < 0) wA += 2*Math.PI;
     }
         // KeyD down - right
-    if (keys[68]) {
+    if (keys[68] && wedgeAlive) {
         wA += rotationAngle;
         while (wA > 2*Math.PI) wA -= 2*Math.PI;
     }
         // KeyW down - shot
-    if (keys[87] && wedgeShotsNumber > 0 && wedgeLastShotTime >= rechargeTime) {
+    if (keys[87] && wedgeShotsNumber > 0 && wedgeLastShotTime >= rechargeTime && wedgeAlive) {
         shots.push({angle: wA + Math.PI,
                     x: wX + (wedgeWidth/2 * Math.cos(wA)) - (shotWidth * Math.cos(wA)),
                     y: wY + (wedgeWidth/2 * Math.sin(wA)) - (shotWidth * Math.sin(wA)),
@@ -104,7 +104,7 @@ function keysControl() {
         wedgeLastShotTime = 0;
     }
         // KeyS down - nitro
-    if (keys[83] && wedgeFuelLevel > 0) {
+    if (keys[83] && wedgeFuelLevel > 0 && wedgeAlive) {
         if (0 <= wA && wA <= Math.PI) {
             wFy += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) * nitroPower;
         } else {
@@ -120,7 +120,7 @@ function keysControl() {
         if (wedgeFuelLevel <= 0) keys[83] = false;
     }
         // KeyS up - nitro off
-    if (!keys[83]) wedgeNitroState = 0;
+    if (!keys[83] && wedgeAlive) wedgeNitroState = 0;
 
     // Needle
     // KeyJ down - left
@@ -182,11 +182,28 @@ function shotsControl() {
     let l = shots.length;
     for (let i = 0; i < l; i++) {
         shots[i].lifeTime += 10;
-        if (shots[i].lifeTime < shotMaximumLifeTime && !shots[i].killer)
-        {
+        if (shots[i].lifeTime < shotMaximumLifeTime && !shots[i].killer) {
             shots[i].x += shotSpeed * Math.cos(shots[i].angle - Math.PI);
             shots[i].y += shotSpeed * Math.sin(shots[i].angle - Math.PI);
-            if (needleAlive) {
+            if (wedgeAlive && shots[i].lifeTime > 70) {
+                let n = wedge.length;
+                for (let o = 0; o < n; o += 2)
+                    if ((shots[i].x - ((wedge[o].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedge[o].y - wedgeOriginDeltaY) * Math.sin(wA) + wX)) *
+                        (shots[i].x - ((wedge[o].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedge[o].y - wedgeOriginDeltaY) * Math.sin(wA) + wX)) +
+                        (shots[i].y - ((wedge[o].x - wedgeOriginDeltaX) * Math.sin(wA) + (wedge[o].y - wedgeOriginDeltaY) * Math.cos(wA) + wY)) *
+                        (shots[i].y - ((wedge[o].x - wedgeOriginDeltaX) * Math.sin(wA) + (wedge[o].y - wedgeOriginDeltaY) * Math.cos(wA) + wY)) <=
+                        wedge[o].r * wedge[o].r &&
+                        (shots[i].x - ((wedge[o+1].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedge[o+1].y - wedgeOriginDeltaY) * Math.sin(wA) + wX)) *
+                        (shots[i].x - ((wedge[o+1].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedge[o+1].y - wedgeOriginDeltaY) * Math.sin(wA) + wX)) +
+                        (shots[i].y - ((wedge[o+1].x - wedgeOriginDeltaX) * Math.sin(wA) + (wedge[o+1].y - wedgeOriginDeltaY) * Math.cos(wA) + wY)) *
+                        (shots[i].y - ((wedge[o+1].x - wedgeOriginDeltaX) * Math.sin(wA) + (wedge[o+1].y - wedgeOriginDeltaY) * Math.cos(wA) + wY)) <=
+                        wedge[o+1].r * wedge[o+1].r &&
+                        (o != 4 || shots[i].x > wX - wedgeOriginDeltaX)) {
+                        shots[i].killer = true;
+                        wedgeAlive = false;
+                    }
+            }
+            if (needleAlive && shots[i].lifeTime > 50) {
                 let n = needle.length - 2, c = false, j = n - 1;
                 for (let o = 0; o < n; o++) {
                     if ((((((needle[o].x - needleWidth/2) * Math.sin(nA) + (needle[o].y - needleHeight/2) * Math.cos(nA) + nY) <= shots[i].y) &&
@@ -335,13 +352,15 @@ function draw() {
 
     //ships' rotation
         //wedge
-    ctx.save();
-    ctx.translate(wX, wY);
-    ctx.rotate(wA);
-    ctx.translate( - wedgeOriginDeltaX, - wedgeOriginDeltaY);
-    if (wedgeNitroState > 0 && wedgeNitroState <= 20) wedgeNitroState++;
-    drawWedge();
-    ctx.restore();
+    if (wedgeAlive) {
+        ctx.save();
+        ctx.translate(wX, wY);
+        ctx.rotate(wA);
+        ctx.translate( - wedgeOriginDeltaX, - wedgeOriginDeltaY);
+        if (wedgeNitroState > 0 && wedgeNitroState <= 20) wedgeNitroState++;
+        drawWedge();
+        ctx.restore();
+    }
         //needle
     if (needleAlive) {
         ctx.save();
