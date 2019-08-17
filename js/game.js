@@ -406,7 +406,7 @@ function draw() {
             if (!s.exploded) {
                 for (let i = 0; i < 100; i++) {
                     let x = 0, y = 0;
-                    while ((x - canvasSize/2) * (x - canvasSize/2) + (y - canvasSize/2) * (y - canvasSize/2) > 1250) {
+                    while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
                         x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
                         y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
                     }
@@ -419,7 +419,7 @@ function draw() {
                     s.e.length = 0;
                     for (let i = 0; i < 75; i++) {
                         let x = 0, y = 0;
-                        while ((x - canvasSize/2) * (x - canvasSize/2) + (y - canvasSize/2) * (y - canvasSize/2) > 1250) {
+                        while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
                             x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
                             y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
                         }
@@ -433,7 +433,7 @@ function draw() {
                     s.e.length = 0;
                     for (let i = 0; i < 50; i++) {
                         let x = 0, y = 0;
-                        while ((x - canvasSize/2) * (x - canvasSize/2) + (y - canvasSize/2) * (y - canvasSize/2) > 1250) {
+                        while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
                             x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
                             y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
                         }
