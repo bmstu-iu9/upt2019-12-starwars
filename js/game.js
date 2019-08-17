@@ -404,26 +404,41 @@ function draw() {
     for (let s of shots) {
         if (s.killer) {
             if (!s.exploded) {
-                for (let i = 0; i < 100; i++)
-                    s.e.push({x: Math.floor(Math.floor(Math.random() * ((s.x + 50) - (s.x - 50))) + (s.x - 50)),
-                              y: Math.floor(Math.floor(Math.random() * ((s.y + 50) - (s.y - 50))) + (s.y - 50))});
+                for (let i = 0; i < 100; i++) {
+                    let x = 0, y = 0;
+                    while ((x - canvasSize/2) * (x - canvasSize/2) + (y - canvasSize/2) * (y - canvasSize/2) > 1250) {
+                        x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
+                        y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
+                    }
+                    s.e.push({x: x, y: y});
+                }
                 s.exploded = true;
             }
             if (s.explosionPause >= 10 && s.explosionPause < 20) {
                 if (s.explosionPause == 10) {
                     s.e.length = 0;
-                    for (let i = 0; i < 75; i++)
-                        s.e.push({x: Math.floor(Math.floor(Math.random() * ((s.x + 50) - (s.x - 50))) + (s.x - 50)),
-                                  y: Math.floor(Math.floor(Math.random() * ((s.y + 50) - (s.y - 50))) + (s.y - 50))});
+                    for (let i = 0; i < 75; i++) {
+                        let x = 0, y = 0;
+                        while ((x - canvasSize/2) * (x - canvasSize/2) + (y - canvasSize/2) * (y - canvasSize/2) > 1250) {
+                            x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
+                            y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
+                        }
+                        s.e.push({x: x, y: y});
+                    }
                 }
                 ctx.fillStyle = "silver";
             }
             if (s.explosionPause >= 20) {
                 if (s.explosionPause == 20) {
                     s.e.length = 0;
-                    for (let i = 0; i < 50; i++)
-                        s.e.push({x: Math.floor(Math.floor(Math.random() * ((s.x + 50) - (s.x - 50))) + (s.x - 50)),
-                                  y: Math.floor(Math.floor(Math.random() * ((s.y + 50) - (s.y - 50))) + (s.y - 50))});
+                    for (let i = 0; i < 50; i++) {
+                        let x = 0, y = 0;
+                        while ((x - canvasSize/2) * (x - canvasSize/2) + (y - canvasSize/2) * (y - canvasSize/2) > 1250) {
+                            x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
+                            y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
+                        }
+                        s.e.push({x: x, y: y});
+                    }
                 }
                 ctx.fillStyle = "grey";
             }
