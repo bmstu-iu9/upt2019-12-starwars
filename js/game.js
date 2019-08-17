@@ -315,17 +315,72 @@ function isLoop(){ //Зацикливание кораблей, шаг см. в 
 
 }
 
+let stars1 = [];
+let stars2 = [];
+let stars3 = [];
+let stars4 = [];
+//1st Magnitude
+for (let i = 0; i < 10; i++){
+    stars1.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+}
+for (let i = 0; i < 20; i++){
+    stars2.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+}
+for (let i = 0; i < 50; i++){
+    stars2.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+}
+for (let i = 0; i < 100; i++){
+    stars3.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+}
+
 //DRAWINGS
 let bgX = 0, cond = 0, step = 5; //координата фона, текущее состояние и скорость мерцания
+function ExpensivePlanetarium(){
+  ctx.fillStyle = "black";
+  ctx.fillRect(0,0,800,800);
+
+  ctx.strokeStyle = "white";
+  ctx.fillStyle = "white";
+  stars1.forEach(function(elem){
+    ctx.beginPath();
+    ctx.arc(elem.x, elem.y, 1, 0, 2*Math.PI, false);
+    ctx.fill();
+    ctx.stroke();
+
+  });
+  stars2.forEach(function(elem){
+    ctx.beginPath();
+    ctx.arc(elem.x, elem.y, 0.5, 0, 2*Math.PI, false);
+    ctx.fill();
+    ctx.stroke();
+
+  });
+
+  stars3.forEach(function(elem){
+    ctx.beginPath();
+    ctx.arc(elem.x, elem.y, 0.3, 0, 2*Math.PI, false);
+    ctx.fill();
+    ctx.stroke();
+
+  });
+  stars4.forEach(function(elem){
+    ctx.beginPath();
+    ctx.arc(elem.x, elem.y, 0.1, 0, 2*Math.PI, false);
+    ctx.fill();
+    ctx.stroke();
+  });
+
+
+}
 function draw() {
 
-
     //backgrownd
-    ctx.drawImage(bg[Math.floor(cond / 100)], bgX, 0);
+    /*ctx.drawImage(bg[Math.floor(cond / 100)], bgX, 0);
     cond += step;
     if (cond == 400 || cond  == 0) step *= -1;
     bgX -= 0.1; // скорость прокрутки фона по горизонтали
-    if (bgX == -4096) bgX = 0;
+    if (bgX == -4096) bgX = 0; */
+    ExpensivePlanetarium();
 
     //shots
     ctx.fillStyle = "white";
@@ -474,6 +529,10 @@ function drawNeedle() {
     }
 }
 
-center.onload = draw;
-keysControl();
-shotsControl();
+
+
+
+
+  center.onload = draw;
+  keysControl();
+  shotsControl();
