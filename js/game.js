@@ -71,12 +71,13 @@ shots.push({x: 400,
             e: []});
 var shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 30, shotSpeed = 1, rechargeTime = 500;
 var wedgeAlive = true, needleAlive = true;
-var wedgeFuelLevel = 30000, needleFuelLevel = 30000, wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
+var wedgeFuelLevel = 3000, needleFuelLevel = 3000, wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
 let nitroPower = 0.05; //МОЩНОСТЬ НИТРО: чем больше, тем сильнее тяга
     //loop helpers
 let loopStep = 40; // 28 <= loopStep <= 70
     //gravity helpers
-let dt = 1, M = 100, m = 10; //Дельта время, масса звезды, масса корабля
+let dt = 1, M = 180, m = 8 ; //Дельта время, масса звезды, масса корабля
+let needleMass = 18, wedgeMass = 18;
 let nFx = 0, nFy = 0, nR;
 let nAx, nAy, nVx = nVy = 0;
 let wFx = 0, wFy = 0, wR;
@@ -123,7 +124,8 @@ function keysControl() {
             wFx += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))) * nitroPower;
             }
         if (wedgeNitroState == 0) wedgeNitroState = 1;
-        wedgeFuelLevel -= 10;
+        wedgeFuelLevel -= 1;
+        wedgeMass = m +  wedgeFuelLevel / 300;
         if (wedgeFuelLevel <= 0) keys[83] = false;
     }
         // KeyS up - nitro off
@@ -167,7 +169,8 @@ function keysControl() {
             nFx += Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA))) * nitroPower;
         }
         if (needleNitroState == 0) needleNitroState = 1;
-        needleFuelLevel -= 10;
+        needleFuelLevel -= 1;
+        needleMass = m +  needleFuelLevel / 300;
         if (needleFuelLevel <= 0) keys[75] = false;
     }
     // KeyK up - nitro off
@@ -270,8 +273,8 @@ function gravityStep(){
           nFx += -(nX - k) / Math.sqrt(nR) * M / (nR * nR); // Fx′ = −(x−x′)/√r × M/r²,
           nFy += -(nY - k) / Math.sqrt(nR) * M / (nR * nR); // Fy′ = −(y−y′)/√r × M/r²
 
-          nAx = nFx / m; //ax = Fx/m
-          nAy = nFy / m; //ay = Fy/m
+          nAx = nFx / needleMass; //ax = Fx/m
+          nAy = nFy / needleMass; //ay = Fy/m
           nVx += nAx * dt; //vx* = vx + ax·Δt
           nVy += nAy * dt; //vy* = vy + ay·Δt
           nX += nVx * dt + nAx * dt * dt / 2; //x* = x + vx·Δt + ax·Δt²/2
@@ -284,8 +287,8 @@ function gravityStep(){
           wFx += -(wX - k) / Math.sqrt(wR) * M / (wR * wR); // Fx′ = −(x−x′)/√r × M/r²,
           wFy += -(wY - k) / Math.sqrt(wR) * M / (wR * wR); // Fy′ = −(y−y′)/√r × M/r²
 
-          wAx = wFx / m; //ax = Fx/ma
-          wAy = wFy / m; //ay = Fy/m
+          wAx = wFx / wedgeMass; //ax = Fx/ma
+          wAy = wFy / wedgeMass; //ay = Fy/m
           wVx += wAx * dt; //vx* = vx + ax·Δt
           wVy += wAy * dt; //vy* = vy + ay·Δt
           wX += wVx * dt + wAx * dt * dt / 2; //x* = x + vx·Δt + ax·Δt²/2
@@ -315,6 +318,7 @@ function isLoop(){ //Зацикливание кораблей, шаг см. в 
 //DRAWINGS
 let bgX = 0, cond = 0, step = 5; //координата фона, текущее состояние и скорость мерцания
 function draw() {
+
 
     //backgrownd
     ctx.drawImage(bg[Math.floor(cond / 100)], bgX, 0);
