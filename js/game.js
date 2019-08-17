@@ -478,7 +478,7 @@ function draw() {
     //center's rotation
     if (centerState < 20 || centerState == 40) {
         ctx.save();
-        ctx.translate(canvasSize/2, canvasSize/2 - 17);
+        ctx.translate(canvasSize/2, canvasSize/2 - 15);
         ctx.rotate(Math.PI/4);
         drawSun();
         //ctx.drawImage(center, -centerWidth/2, -centerHeight/2);
@@ -498,7 +498,7 @@ function draw() {
     ctx.arc(400, 400, 3, 0, 2*Math.PI, false);
     ctx.fill();
     ctx.closePath();
-    */
+ */
 
     //gravity effect
     gravityStep();
@@ -560,32 +560,33 @@ function drawNeedle() {
         ctx.fill();
     }
 }
-
-let sunGap = 388;
+let  sunSize = 0.9;
+let sunGap = (canvasSize - sunSize*24)/2;
 function drawSun(){
     ctx.fillStyle = "white";
-    ctx.fillStroke = "gray";
+    ctx.strokeStyle = "gray";
     ctx.beginPath();
-    ctx.arc(11 , 0, 0.2, 2*Math.PI, false);
-    ctx.arc(12, 0, 0.2, 2*Math.PI, false);
-    ctx.arc(13, 10, 0.2, 2*Math.PI, false);
-    ctx.arc(17, 7, 0.2, 2*Math.PI, false);
-    ctx.arc(14, 11, 0.2, 2*Math.PI, false);
-    ctx.arc(24, 12, 0.2, 2*Math.PI, false);
-    ctx.arc(24, 13, 0.2, 2*Math.PI, false);
-    ctx.arc(14, 14, 0.2, 2*Math.PI, false);
-    ctx.arc(17, 18, 0.2, 2*Math.PI, false);
-    ctx.arc(13, 15, 0.2, 2*Math.PI, false);
-    ctx.arc(12, 24, 0.2, 2*Math.PI, false);
-    ctx.arc(11, 24, 0.2, 2*Math.PI, false);
-    ctx.arc(10, 15, 0.2, 2*Math.PI, false);
-    ctx.arc(6, 18, 0.2, 2*Math.PI, false);
-    ctx.arc(9, 14, 0.2, 2*Math.PI, false);
-    ctx.arc(0, 13, 0.2, 2*Math.PI, false);
-    ctx.arc(0, 12, 0.2, 2*Math.PI, false);
-    ctx.arc(9, 11, 0.2, 2*Math.PI, false);
-    ctx.arc(6, 7, 0.2, 2*Math.PI, false);
-    ctx.arc(10, 10, 0.2, 2*Math.PI, false);
+    ctx.arc(sunSize * 11 ,sunSize *  0, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 12, sunSize * 0, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 13, sunSize * 10, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 17, sunSize * 7, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 14, sunSize * 11, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 24, sunSize * 12, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 24, sunSize * 13, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 14, sunSize * 14, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 17, sunSize * 18, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 13, sunSize * 15, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 12, sunSize * 24, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 11, sunSize * 24, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 10, sunSize * 15, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 6, sunSize * 18, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 9, sunSize * 14, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 0, sunSize * 13, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 0, sunSize * 12, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 9, sunSize * 11, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 6, sunSize * 7, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 10, sunSize * 10, 0, 2*Math.PI, false);
+    ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
