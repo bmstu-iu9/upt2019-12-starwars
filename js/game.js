@@ -320,66 +320,78 @@ for (let i = 0; i < 20; i++){
 for (let i = 0; i < 50; i++){
     stars2.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
 }
-for (let i = 0; i < 100; i++){
+for (let i = 0; i < 70; i++){
     stars3.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
 }
 
 //DRAWINGS
-let  stepX = 0.045, stepY = 0.01; //координата фона, текущее состояние и скорость мерцания
+let  stepX = 0.1, stepY = 0.001; //координата фона, текущее состояние и скорость мерцания
+let color1 = 230, color2 = 50, colorStep1 = -1, colorStep2 = -1;
 function ExpensivePlanetarium(){
+
   ctx.fillStyle = "black";
   ctx.fillRect(0,0,800,800);
 
-  ctx.strokeStyle = "white";
-  ctx.fillStyle = "white";
+
+  ctx.strokeStyle = 'rgb(' + color1 + ',' + color1 + ',' + color1 + ')';
+  ctx.fillStyle = ctx.strokeStyle ;
+
   stars1.forEach(function(elem){
     ctx.beginPath();
     ctx.arc(elem.x, elem.y, 1, 0, 2*Math.PI, false);
     elem.x-=stepX;
     elem.y-=stepY;
-    if (elem.x <= 0) elem.x = 1600;
-    if (elem.y <= 0) elem.x = 1600;
+    if (elem.x <= 0) elem.x = 1000;
+    if (elem.y <= 0) elem.y = 1000;
     ctx.fill();
     ctx.stroke();
 
   });
+  ctx.strokeStyle = 'rgb(' + color2 + ',' + color2 + ',' + color2 + ')';
+  ctx.fillStyle = ctx.strokeStyle ;
   stars2.forEach(function(elem){
     ctx.beginPath();
     ctx.arc(elem.x, elem.y, 0.5, 0, 2*Math.PI, false);
     elem.x-=stepX;
     elem.y-=stepY;
-    if (elem.x <= 0) elem.x = 1600;
-    if (elem.y <= 0) elem.x = 1600;
+    if (elem.x <= 0) elem.x = 1000;
+    if (elem.y <= 0) elem.y = 1000;
     ctx.fill();
     ctx.stroke();
 
   });
-  ctx.strokeStyle = "gray";
-  ctx.fillStyle = "gray";
+  ctx.strokeStyle = 'rgb(' + color1 + ',' + color1 + ',' + color1 + ')';
+  ctx.fillStyle = ctx.strokeStyle ;
+
   stars3.forEach(function(elem){
     ctx.beginPath();
     ctx.arc(elem.x, elem.y, 0.4, 0, 2*Math.PI, false);
     elem.x-=stepX;
     elem.y-=stepY;
-    if (elem.x <= 0) elem.x = 1600;
-    if (elem.y <= 0) elem.x = 1600;
+    if (elem.x <= 0) elem.x = 1000;
+    if (elem.y <= 0) elem.y = 1000;
     ctx.fill();
     ctx.stroke();
 
   });
-  ctx.strokeStyle = "white";
-  ctx.fillStyle = "white";
+  ctx.strokeStyle = 'rgb(' + color2 + ',' + color2 + ',' + color2 + ')';
+  ctx.fillStyle = ctx.strokeStyle ;
   stars4.forEach(function(elem){
     ctx.beginPath();
     ctx.arc(elem.x, elem.y, 0.2, 0, 2*Math.PI, false);
     elem.x-=stepX;
     elem.y-=stepY;
-    if (elem.x <= 0) elem.x = 1600;
-    if (elem.y <= 0) elem.x = 1600;
+    if (elem.x <= 0) elem.x = 1000;
+    if (elem.y <= 0) elem.y = 1000;
     ctx.fill();
     ctx.stroke();
   });
 
+  color1 += colorStep1;
+  color2 += colorStep2;
+
+  if (color1 < 50 || color1 > 230) colorStep1*=-1;
+  if (color2 < 50 || color2 > 230) colorStep2*=-1;
 
 }
 function draw() {
