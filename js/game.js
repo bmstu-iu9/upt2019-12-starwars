@@ -62,6 +62,13 @@ needleNitro.push({x: -22, y: 9});
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [], shots = [];
+shots.push({x: 400,
+            y: 400,
+            lifeTime: 71,
+            killer: false,
+            exploded: false,
+            explosionPause: 0,
+            e: []});
 var shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 30, shotSpeed = 1, rechargeTime = 500;
 var wedgeAlive = true, needleAlive = true;
 var wedgeFuelLevel = 30000, needleFuelLevel = 30000, wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
@@ -181,10 +188,12 @@ document.addEventListener("keyup", function(e) {
 function shotsControl() {
     let l = shots.length;
     for (let i = 0; i < l; i++) {
-        shots[i].lifeTime += 10;
+        if (shots[i].x != 400 && shots[i].y != 400) shots[i].lifeTime += 10;
         if (shots[i].lifeTime < shotMaximumLifeTime && !shots[i].killer) {
-            shots[i].x += shotSpeed * Math.cos(shots[i].angle - Math.PI);
-            shots[i].y += shotSpeed * Math.sin(shots[i].angle - Math.PI);
+            if (shots[i].x != 400 && shots[i].y != 400) {
+                shots[i].x += shotSpeed * Math.cos(shots[i].angle - Math.PI);
+                shots[i].y += shotSpeed * Math.sin(shots[i].angle - Math.PI);
+            }
             if (wedgeAlive && shots[i].lifeTime > 70) {
                 let n = wedge.length;
                 for (let o = 0; o < n; o += 2)
@@ -201,6 +210,13 @@ function shotsControl() {
                         (o != 4 || shots[i].x > wX - wedgeOriginDeltaX)) {
                         shots[i].killer = true;
                         wedgeAlive = false;
+                        shots.push({x: 400,
+                                    y: 400,
+                                    lifeTime: 71,
+                                    killer: false,
+                                    exploded: false,
+                                    explosionPause: 0,
+                                    e: []});
                     }
             }
             if (needleAlive && shots[i].lifeTime > 50) {
@@ -222,6 +238,13 @@ function shotsControl() {
                 if (c) {
                     shots[i].killer = true;
                     needleAlive = false;
+                    shots.push({x: 400,
+                                y: 400,
+                                lifeTime: 71,
+                                killer: false,
+                                exploded: false,
+                                explosionPause: 0,
+                                e: []});
                 }
             }
         } else if (shots[i].explosionPause >= shotMaximumExlposionPause) {
@@ -393,26 +416,28 @@ function draw() {
 }
 
 function drawWedge() {
-    ctx.fillStyle = "black";
-    ctx.strokeStyle = "white";
-    ctx.moveTo(0, 0);
-    let n = wedge.length;
-    for (let i = 0; i < n; i += 2) {
-        ctx.beginPath();
-        ctx.arc(wedge[i].x, wedge[i].y, wedge[i].r, wedge[i].a1, wedge[i].a2, false);
-        ctx.arc(wedge[i+1].x, wedge[i+1].y, wedge[i+1].r, wedge[i+1].a1, wedge[i+1].a2, false);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-    }
-    if (wedgeNitroState > 0) {
-        ctx.beginPath();
+    if (wX != 400 && wY != 400) {
+        ctx.fillStyle = "black";
+        ctx.strokeStyle = "white";
         ctx.moveTo(0, 0);
-        ctx.lineTo(wedgeNitro[Math.floor(wedgeNitroState/5)].x, wedgeNitro[Math.floor(wedgeNitroState/5)].y);
-        ctx.lineTo(0, 8);
-        ctx.closePath();
-        ctx.fillStyle = "white";
-        ctx.fill();
+        let n = wedge.length;
+        for (let i = 0; i < n; i += 2) {
+            ctx.beginPath();
+            ctx.arc(wedge[i].x, wedge[i].y, wedge[i].r, wedge[i].a1, wedge[i].a2, false);
+            ctx.arc(wedge[i+1].x, wedge[i+1].y, wedge[i+1].r, wedge[i+1].a1, wedge[i+1].a2, false);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+        }
+        if (wedgeNitroState > 0) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(wedgeNitro[Math.floor(wedgeNitroState/5)].x, wedgeNitro[Math.floor(wedgeNitroState/5)].y);
+            ctx.lineTo(0, 8);
+            ctx.closePath();
+            ctx.fillStyle = "white";
+            ctx.fill();
+        }
     }
 }
 
