@@ -15,10 +15,9 @@ var centerWidth = 25, centerHeight = 25;
 
 var wedge = [], wedgeNitro = [];
 var needle = [], needleNitro = [];
-var center = new Image();
 
 
-center.src = "img/center.png";
+
 
 wedge.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
 wedge.push({x: 4, y: 12, r: 19, a1: -Math.acos(-1/Math.sqrt(10)), a2: -Math.acos(14/Math.sqrt(365))});
@@ -593,6 +592,6 @@ function drawSun(){
 }
 
 
-  center.onload = draw;
+  draw();
   keysControl();
   shotsControl();
