@@ -311,10 +311,10 @@ let stars2 = [];
 let stars3 = [];
 let stars4 = [];
 //1st Magnitude
-for (let i = 0; i < 10; i++){
+for (let i = 0; i < 15; i++){
     stars1.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
 }
-for (let i = 0; i < 20; i++){
+for (let i = 0; i < 15; i++){
     stars2.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
 }
 for (let i = 0; i < 50; i++){
@@ -325,8 +325,9 @@ for (let i = 0; i < 70; i++){
 }
 
 //DRAWINGS
-let  stepX = 0.1, stepY = 0.001; //координата фона, текущее состояние и скорость мерцания
-let color1 = 230, color2 = 50, colorStep1 = -1, colorStep2 = -1;
+let  stepX = 0.1, stepY = 0.001; //скорость прокручивания фона
+
+let color1 = 230, color2 = 50, colorStep1 = -1, colorStep2 = 1; //скорость мерцания звезд на фоне
 function ExpensivePlanetarium(){
 
   ctx.fillStyle = "black";
@@ -351,7 +352,7 @@ function ExpensivePlanetarium(){
   ctx.fillStyle = ctx.strokeStyle ;
   stars2.forEach(function(elem){
     ctx.beginPath();
-    ctx.arc(elem.x, elem.y, 0.5, 0, 2*Math.PI, false);
+    ctx.arc(elem.x, elem.y, 0.6, 0, 2*Math.PI, false);
     elem.x-=stepX;
     elem.y-=stepY;
     if (elem.x <= 0) elem.x = 1000;
@@ -365,7 +366,7 @@ function ExpensivePlanetarium(){
 
   stars3.forEach(function(elem){
     ctx.beginPath();
-    ctx.arc(elem.x, elem.y, 0.4, 0, 2*Math.PI, false);
+    ctx.arc(elem.x, elem.y, 0.3, 0, 2*Math.PI, false);
     elem.x-=stepX;
     elem.y-=stepY;
     if (elem.x <= 0) elem.x = 1000;
