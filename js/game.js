@@ -487,7 +487,7 @@ function draw() {
     }
 
     //center's rotation
-    if (centerState < 20 || centerState == 40) {
+  /*  if (centerState < 20 || centerState == 40) {
         ctx.save();
         ctx.translate(canvasSize/2, canvasSize/2);
         ctx.rotate(Math.PI/4);
@@ -499,11 +499,83 @@ function draw() {
         ctx.drawImage(center, cX, cY);
         centerState++;
     }
-
+*/
     //gravity effect
     gravityStep();
     isLoop();
+
+
+    ctx.save();
+    ctx.translate(canvasSize/2, canvasSize/2);
+    ctx.rotate(Math.PI/4);
+    ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1  );
+    drawSun(6,2);
+    ctx.restore();
+    drawSun(8,2);
+
+    ctx.beginPath();
+    ctx.fillStyle = "green";
+    ctx.arc(400, 400, 3, 0, 2*Math.PI, false);
+    //ctx.fill();
+    ctx.closePath();
     requestAnimationFrame(draw);
+
+}
+
+//function drawSun(){
+  let  sunSize = 1, length = 2;
+let sunGap = (canvasSize - sunSize*24)/2;
+
+function drawSun(l,r){
+
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "white";
+    //let l = 5, r = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(canvasSize/2 - r, canvasSize/2);
+    ctx.lineTo(canvasSize/2, canvasSize/2 - l);
+
+    ctx.lineTo(canvasSize/2 + r, canvasSize/2);
+    ctx.lineTo(canvasSize/2 + r + l, canvasSize/2 + r);
+
+    ctx.lineTo(canvasSize/2 + r, canvasSize/2 + 2*r) ;
+    ctx.lineTo(canvasSize/2, canvasSize/2 + 2 * r + l);
+
+    ctx.lineTo(canvasSize/2 - r, canvasSize/2 + 2 * r);
+    ctx.lineTo(canvasSize/2 - r - l, canvasSize/2 + r);
+
+    ctx.closePath();
+
+    /*ctx.arc(sunSize * 11 ,sunSize *  (0 + length), 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 12, sunSize * (0 + length), 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 13, sunSize * 10, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 17, sunSize * 7, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 14, sunSize * 11, 0, 2*Math.PI, false);
+
+    ctx.arc(sunSize * (24 - length), sunSize * 12, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * (24 - length), sunSize * 13, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 14, sunSize * 14, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 17, sunSize * 18, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 13, sunSize * 15, 0, 2*Math.PI, false);
+
+    ctx.arc(sunSize * 12, sunSize * (24 - length), 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 11, sunSize * (24 - length), 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 10, sunSize * 15, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 6, sunSize * 18, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 9, sunSize * 14, 0, 2*Math.PI, false);
+
+    ctx.arc(sunSize * (0 + length), sunSize * 13, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * (0 + length), sunSize * 12, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 9, sunSize * 11, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 6, sunSize * 7, 0, 2*Math.PI, false);
+    ctx.arc(sunSize * 10, sunSize * 10, 0, 2*Math.PI, false);
+    */
+
+    ctx.fill();
+    //ctx.stroke();
+
+
 }
 
 function drawWedge() {
@@ -562,6 +634,9 @@ function drawNeedle() {
 }
 
 
-  center.onload = draw;
+
+
+
+  draw();
   keysControl();
   shotsControl();
