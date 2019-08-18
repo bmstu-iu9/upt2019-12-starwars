@@ -50,10 +50,12 @@ needleNitro.push({x: -22, y: 9});
 var rotationAngle = Math.PI/50; //шаг вращения кораблей
 var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [], shots = [];
-shots.push({x: 400,
+shots.push({owner: 2,
+            x: 400,
             y: 400,
             lifeTime: 71,
             killer: false,
+            victim: -1,
             exploded: false,
             explosionPause: 0,
             e: []});
@@ -88,11 +90,13 @@ function keysControl() {
     }
         // KeyW down - shot
     if (keys[87] && wedgeShotsNumber > 0 && wedgeLastShotTime >= rechargeTime && wedgeAlive) {
-        shots.push({angle: wA + Math.PI,
+        shots.push({owner: 0,
+                    angle: wA + Math.PI,
                     x: wX + (wedgeWidth/2 * Math.cos(wA)) - (shotWidth * Math.cos(wA)),
                     y: wY + (wedgeWidth/2 * Math.sin(wA)) - (shotWidth * Math.sin(wA)),
                     lifeTime: 0,
                     killer: false,
+                    victim: -1,
                     exploded: false,
                     explosionPause: 0,
                     e: []});
@@ -132,11 +136,13 @@ function keysControl() {
     }
     // KeyI down - shot
     if (keys[73] && needleShotsNumber > 0 && needleLastShotTime >= rechargeTime && needleAlive) {
-        shots.push({angle: nA + Math.PI,
+        shots.push({owner: 1,
+                    angle: nA + Math.PI,
                     x: nX + (needleWidth/2 * Math.cos(nA)) - (shotWidth * Math.cos(nA)),
                     y: nY + (needleWidth/2 * Math.sin(nA)) - (shotWidth * Math.sin(nA)),
                     lifeTime: 0,
                     killer: false,
+                    victim: -1,
                     exploded: false,
                     explosionPause: 0,
                     e: []});
@@ -179,9 +185,9 @@ document.addEventListener("keyup", function(e) {
 function shotsControl() {
     let l = shots.length;
     for (let i = 0; i < l; i++) {
-        if (shots[i].x != 400 && shots[i].y != 400) shots[i].lifeTime += 10;
+        if (shots[i].owner != 2) shots[i].lifeTime += 10;
         if (shots[i].lifeTime < shotMaximumLifeTime && !shots[i].killer) {
-            if (shots[i].x != 400 && shots[i].y != 400) {
+            if (shots[i].owner != 2) {
                 shots[i].x += shotSpeed * Math.cos(shots[i].angle - Math.PI);
                 shots[i].y += shotSpeed * Math.sin(shots[i].angle - Math.PI);
             }
@@ -200,11 +206,14 @@ function shotsControl() {
                         wedge[o+1].r * wedge[o+1].r &&
                         (o != 4 || shots[i].x > wX - wedgeOriginDeltaX)) {
                         shots[i].killer = true;
+                        shots[i].victim = 0;
                         wedgeAlive = false;
-                        shots.push({x: 400,
+                        shots.push({owner: 2,
+                                    x: 400,
                                     y: 400,
                                     lifeTime: 71,
                                     killer: false,
+                                    victim: -1,
                                     exploded: false,
                                     explosionPause: 0,
                                     e: []});
@@ -228,11 +237,14 @@ function shotsControl() {
                     }
                 if (c) {
                     shots[i].killer = true;
+                    shots[i].victim = 1;
                     needleAlive = false;
-                    shots.push({x: 400,
+                    shots.push({owner: 2,
+                                x: 400,
                                 y: 400,
                                 lifeTime: 71,
                                 killer: false,
+                                victim: -1,
                                 exploded: false,
                                 explosionPause: 0,
                                 e: []});
@@ -256,10 +268,12 @@ function automaticUpdate() {
         wedgeNitroState = 0;
         needleNitroState = 0;
         shots.length = 0;
-        shots.push({x: 400,
+        shots.push({owner: 2,
+                    x: 400,
                     y: 400,
                     lifeTime: 71,
                     killer: false,
+                    victim: -1,
                     exploded: false,
                     explosionPause: 0,
                     e: []});
@@ -447,7 +461,10 @@ function draw() {
     for (let s of shots) {
         if (s.killer) {
             if (!s.exploded) {
-                for (let i = 0; i < 100; i++) {
+                let n = 100;
+                if (s.victim == 0) n = 50 + (50 * wedgeFuelLevel / 3000);
+                else if (s.victim == 1) n = 50 + (50 * needleFuelLevel / 3000);
+                for (let i = 0; i < n; i++) {
                     let x = 0, y = 0;
                     while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
                         x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
@@ -464,7 +481,10 @@ function draw() {
             if (s.explosionPause >= 10 && s.explosionPause < 20) {
                 if (s.explosionPause == 10) {
                     s.e.length = 0;
-                    for (let i = 0; i < 75; i++) {
+                    let n = 75;
+                    if (s.victim == 0) n = 38 + (37 * wedgeFuelLevel / 3000);
+                    else if (s.victim == 1) n = 38 + (37 * needleFuelLevel / 3000);
+                    for (let i = 0; i < n; i++) {
                         let x = 0, y = 0;
                         while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
                             x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
@@ -482,7 +502,10 @@ function draw() {
             if (s.explosionPause >= 20) {
                 if (s.explosionPause == 20) {
                     s.e.length = 0;
-                    for (let i = 0; i < 50; i++) {
+                    let n = 50;
+                    if (s.victim == 0) n = 25 + (25 * wedgeFuelLevel / 3000);
+                    else if (s.victim == 1) n = 25 + (25 * needleFuelLevel / 3000);
+                    for (let i = 0; i < n; i++) {
                         let x = 0, y = 0;
                         while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
                             x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
