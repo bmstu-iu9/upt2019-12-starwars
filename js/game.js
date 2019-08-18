@@ -449,6 +449,10 @@ function draw() {
                         x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
                         y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
                     }
+                    if (x >= canvasSize) x -= canvasSize;
+                    if (x <= 0) x += canvasSize;
+                    if (y >= canvasSize) y -= canvasSize;
+                    if (y <= 0) y += canvasSize;
                     s.e.push({x: x, y: y});
                 }
                 s.exploded = true;
@@ -462,6 +466,10 @@ function draw() {
                             x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
                             y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
                         }
+                        if (x >= canvasSize) x -= canvasSize;
+                        if (x <= 0) x += canvasSize;
+                        if (y >= canvasSize) y -= canvasSize;
+                        if (y <= 0) y += canvasSize;
                         s.e.push({x: x, y: y});
                     }
                 }
@@ -476,6 +484,10 @@ function draw() {
                             x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
                             y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
                         }
+                        if (x >= canvasSize) x -= canvasSize;
+                        if (x <= 0) x += canvasSize;
+                        if (y >= canvasSize) y -= canvasSize;
+                        if (y <= 0) y += canvasSize;
                         s.e.push({x: x, y: y});
                     }
                 }
@@ -493,9 +505,14 @@ function draw() {
             ctx.restore();
         } else {
             if (!s.exploded) {
-                for (let i = 0; i < 3; i++)
+                for (let i = 0; i < 3; i++) {
                     s.e.push({x: Math.floor(Math.floor(Math.random() * ((s.x + 10) - (s.x - 10))) + (s.x - 10)),
                               y: Math.floor(Math.floor(Math.random() * ((s.y + 10) - (s.y - 10))) + (s.y - 10))});
+                    if (s.x >= canvasSize) s.x -= canvasSize;
+                    if (s.x <= 0) s.x += canvasSize;
+                    if (s.y >= canvasSize) s.y -= canvasSize;
+                    if (s.y <= 0) s.y += canvasSize;
+                }
                 s.exploded = true;
             }
             for (let i = 0; i < 3; i++) ctx.fillRect(s.e[i].x, s.e[i].y, 2, 2);
