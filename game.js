@@ -119,8 +119,8 @@ function keysControl() {
     if (keys[87] && wedgeShotsNumber > 0 && wedgeLastShotTime >= rechargeTime && wedgeAlive) {
         shots.push({owner: 0,
                     angle: wA + Math.PI,
-                    x: wX + (wedgeWidth/2 * Math.cos(wA)) - (shotWidth * Math.cos(wA)),
-                    y: wY + (wedgeWidth/2 * Math.sin(wA)) - (shotWidth * Math.sin(wA)),
+                    x: wX + (wedgeWidth/2 * Math.cos(wA)) + (4 * Math.cos(wA)),
+                    y: wY + (wedgeWidth/2 * Math.sin(wA)) + (shotWidth * Math.sin(wA)),
                     lifeTime: 0,
                     killer: false,
                     victim: -1,
@@ -165,8 +165,8 @@ function keysControl() {
     if (keys[73] && needleShotsNumber > 0 && needleLastShotTime >= rechargeTime && needleAlive) {
         shots.push({owner: 1,
                     angle: nA + Math.PI,
-                    x: nX + (needleWidth/2 * Math.cos(nA)) - (shotWidth * Math.cos(nA)),
-                    y: nY + (needleWidth/2 * Math.sin(nA)) - (shotWidth * Math.sin(nA)),
+                    x: nX + (needleWidth/2 * Math.cos(nA)) + (5 * Math.cos(nA)),
+                    y: nY + (needleWidth/2 * Math.sin(nA)) + (shotWidth * Math.sin(nA)),
                     lifeTime: 0,
                     killer: false,
                     victim: -1,
@@ -218,7 +218,7 @@ function shotsControl() {
                 shots[i].x += shotSpeed * Math.cos(shots[i].angle - Math.PI);
                 shots[i].y += shotSpeed * Math.sin(shots[i].angle - Math.PI);
             }
-            if (wedgeAlive && shots[i].lifeTime > 70) {
+            if (wedgeAlive) {
                 let n = wedge.length;
                 for (let o = 0; o < n; o += 2)
                     if ((shots[i].x - ((wedge[o].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedge[o].y - wedgeOriginDeltaY) * Math.sin(wA) + wX)) *
@@ -237,7 +237,7 @@ function shotsControl() {
                         wedgeAlive = false;
                     }
             }
-            if (needleAlive && shots[i].lifeTime > 50) {
+            if (needleAlive) {
                 let n = needle.length - 2, c = false, j = n - 1;
                 for (let o = 0; o < n; o++) {
                     if ((((((needle[o].x - needleWidth/2) * Math.sin(nA) + (needle[o].y - needleHeight/2) * Math.cos(nA) + nY) <= shots[i].y) &&
