@@ -250,6 +250,40 @@ function shotsControl() {
     setTimeout(shotsControl, 10);
 }
 
+function automaticUpdate() {
+    if (!wedgeAlive || !needleAlive) {
+        wedgeNitroState = 0;
+        needleNitroState = 0;
+        shots.length = 0;
+        shots.push({x: 400,
+                    y: 400,
+                    lifeTime: 71,
+                    killer: false,
+                    exploded: false,
+                    explosionPause: 0,
+                    e: []});
+        wX = 40;
+        wY = 50;
+        wA = Math.PI/2;
+        nX = canvasSize - wX;
+        nY = canvasSize - wY;
+        nA = 3*Math.PI/2;
+        wVx = wVy = 0;
+        nVx = nVy = 0;
+        wedgeMass = 18;
+        needleMass = 18;
+        wedgeFuelLevel = 3000;
+        needleFuelLevel = 3000;
+        wedgeShotsNumber = 33;
+        wedgeLastShotTime = rechargeTime;
+        needleShotsNumber = 33;
+        needleLastShotTime = rechargeTime;
+        wedgeAlive = true;
+        needleAlive = true;
+    }
+    setTimeout(automaticUpdate, 2000);
+}
+
 var wX = 40, wY = 50, wA = Math.PI/2; // Х, У и угол наклона Wedge
 var nX = canvasSize - wX, nY = canvasSize - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
 var cX = canvasSize/2 - centerWidth/2 , cY = canvasSize/2 - centerWidth/2; //X, Y центра
@@ -565,3 +599,4 @@ function drawNeedle() {
   center.onload = draw;
   keysControl();
   shotsControl();
+  automaticUpdate();
