@@ -15,10 +15,7 @@ var centerWidth = 25, centerHeight = 25;
 
 var wedge = [], wedgeNitro = [];
 var needle = [], needleNitro = [];
-var center = new Image();
 
-
-center.src = "img/center.png";
 
 wedge.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
 wedge.push({x: 4, y: 12, r: 19, a1: -Math.acos(-1/Math.sqrt(10)), a2: -Math.acos(14/Math.sqrt(365))});
@@ -286,7 +283,6 @@ function automaticUpdate() {
 
 var wX = 40, wY = 50, wA = Math.PI/2; // Х, У и угол наклона Wedge
 var nX = canvasSize - wX, nY = canvasSize - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
-var cX = canvasSize/2 - centerWidth/2 , cY = canvasSize/2 - centerWidth/2; //X, Y центра
 let k = canvasSize/2;
 
 //GRAVITY
@@ -340,11 +336,13 @@ function isLoop(){ //Зацикливание кораблей, шаг см. в 
 
 }
 
+
+//Stars Generation
 let stars1 = [];
 let stars2 = [];
 let stars3 = [];
 let stars4 = [];
-//1st Magnitude
+
 for (let i = 0; i < 15; i++){
     stars1.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
 }
@@ -521,23 +519,57 @@ function draw() {
     }
 
     //center's rotation
-    if (centerState < 20 || centerState == 40) {
-        ctx.save();
-        ctx.translate(canvasSize/2, canvasSize/2);
-        ctx.rotate(Math.PI/4);
-        ctx.drawImage(center, -centerWidth/2, -centerHeight/2);
-        ctx.restore();
+   if (centerState < 20 || centerState == 40) {
+         ctx.save();
+         ctx.translate(canvasSize/2, canvasSize/2);
+         ctx.rotate(Math.PI/4);
+         ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1  );
+         drawSun(6,2);
+         ctx.restore();
+         drawSun(10,2);
         if (centerState < 20) centerState++;
         else centerState = 1;
     } else {
-        ctx.drawImage(center, cX, cY);
+        ctx.save();
+        ctx.translate(canvasSize/2, canvasSize/2);
+        ctx.rotate(Math.PI/4);
+        ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1  );
+        drawSun(10,2);
+        ctx.restore();
+        drawSun(6,2);
         centerState++;
     }
 
     //gravity effect
     gravityStep();
     isLoop();
+    ctx.closePath();
     requestAnimationFrame(draw);
+
+}
+
+
+function drawSun(l,r){
+
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "white";
+
+    ctx.beginPath();
+    ctx.moveTo(canvasSize/2 - r, canvasSize/2);
+    ctx.lineTo(canvasSize/2, canvasSize/2 - l);
+
+    ctx.lineTo(canvasSize/2 + r, canvasSize/2);
+    ctx.lineTo(canvasSize/2 + r + l, canvasSize/2 + r);
+
+    ctx.lineTo(canvasSize/2 + r, canvasSize/2 + 2*r) ;
+    ctx.lineTo(canvasSize/2, canvasSize/2 + 2 * r + l);
+
+    ctx.lineTo(canvasSize/2 - r, canvasSize/2 + 2 * r);
+    ctx.lineTo(canvasSize/2 - r - l, canvasSize/2 + r);
+
+    ctx.closePath();
+    ctx.fill();
+
 }
 
 function drawWedge() {
@@ -595,8 +627,7 @@ function drawNeedle() {
     }
 }
 
-
-  center.onload = draw;
+  draw();
   keysControl();
   shotsControl();
   automaticUpdate();
