@@ -62,7 +62,7 @@ var wedgeAlive = true, needleAlive = true;
 var wedgeFuelLevel = 3000, needleFuelLevel = 3000, wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
 let nitroPower = 0.05; //МОЩНОСТЬ НИТРО: чем больше, тем сильнее тяга
     //loop helpers
-let loopStep = 40; // 28 <= loopStep <= 70
+let loopStep = 30; // 28 <= loopStep <= 70
     //gravity helpers
 let dt = 1, M = 180, m = 8 ; //Дельта время, масса звезды, масса корабля
 let needleMass = 18, wedgeMass = 18;
@@ -334,6 +334,13 @@ function isLoop(){ //Зацикливание кораблей, шаг см. в 
   if (nY > canvasSize + loopStep) nY = -loopStep;
   if (nY < -loopStep) nY = canvasSize + loopStep;
 
+  //shots
+  for (let s of shots) {
+      if (s.x >= canvasSize + 6) s.x = 0;
+      if (s.x <= -6) s.x = canvasSize;
+      if (s.y >= canvasSize + 6) s.y = 0;
+      if (s.y <= -6) s.y = canvasSize;
+  }
 }
 
 
