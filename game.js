@@ -52,6 +52,33 @@ var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
 var keys = [], shots = [];
 shots.push({owner: 2,
             x: 400,
+            y: 390,
+            lifeTime: 71,
+            killer: false,
+            victim: -1,
+            exploded: false,
+            explosionPause: 0,
+            e: []});
+shots.push({owner: 2,
+            x: 410,
+            y: 400,
+            lifeTime: 71,
+            killer: false,
+            victim: -1,
+            exploded: false,
+            explosionPause: 0,
+            e: []});
+shots.push({owner: 2,
+            x: 400,
+            y: 410,
+            lifeTime: 71,
+            killer: false,
+            victim: -1,
+            exploded: false,
+            explosionPause: 0,
+            e: []});
+shots.push({owner: 2,
+            x: 390,
             y: 400,
             lifeTime: 71,
             killer: false,
@@ -208,15 +235,6 @@ function shotsControl() {
                         shots[i].killer = true;
                         shots[i].victim = 0;
                         wedgeAlive = false;
-                        shots.push({owner: 2,
-                                    x: 400,
-                                    y: 400,
-                                    lifeTime: 71,
-                                    killer: false,
-                                    victim: -1,
-                                    exploded: false,
-                                    explosionPause: 0,
-                                    e: []});
                     }
             }
             if (needleAlive && shots[i].lifeTime > 50) {
@@ -239,15 +257,6 @@ function shotsControl() {
                     shots[i].killer = true;
                     shots[i].victim = 1;
                     needleAlive = false;
-                    shots.push({owner: 2,
-                                x: 400,
-                                y: 400,
-                                lifeTime: 71,
-                                killer: false,
-                                victim: -1,
-                                exploded: false,
-                                explosionPause: 0,
-                                e: []});
                 }
             }
         } else if (shots[i].explosionPause >= shotMaximumExlposionPause) {
@@ -270,6 +279,33 @@ function automaticUpdate() {
         shots.length = 0;
         shots.push({owner: 2,
                     x: 400,
+                    y: 390,
+                    lifeTime: 71,
+                    killer: false,
+                    victim: -1,
+                    exploded: false,
+                    explosionPause: 0,
+                    e: []});
+        shots.push({owner: 2,
+                    x: 410,
+                    y: 400,
+                    lifeTime: 71,
+                    killer: false,
+                    victim: -1,
+                    exploded: false,
+                    explosionPause: 0,
+                    e: []});
+        shots.push({owner: 2,
+                    x: 400,
+                    y: 410,
+                    lifeTime: 71,
+                    killer: false,
+                    victim: -1,
+                    exploded: false,
+                    explosionPause: 0,
+                    e: []});
+        shots.push({owner: 2,
+                    x: 390,
                     y: 400,
                     lifeTime: 71,
                     killer: false,
@@ -524,13 +560,13 @@ function draw() {
             for (let i = 0; i < n; i++) ctx.fillRect(s.e[i].x, s.e[i].y, 2, 2);
             ctx.fillStyle = "white";
             s.explosionPause++;
-        } else if (s.lifeTime < shotMaximumLifeTime) {
+        } else if (s.lifeTime < shotMaximumLifeTime && s.owner != 2) {
             ctx.save();
             ctx.translate(s.x, s.y);
             ctx.rotate(s.angle);
             ctx.fillRect(0, 0, shotWidth, shotHeight);
             ctx.restore();
-        } else {
+        } else if (s.owner != 2) {
             if (!s.exploded) {
                 for (let i = 0; i < 3; i++) {
                     s.e.push({x: Math.floor(Math.floor(Math.random() * ((s.x + 10) - (s.x - 10))) + (s.x - 10)),
