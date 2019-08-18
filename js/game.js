@@ -259,8 +259,8 @@ function automaticUpdate() {
                     exploded: false,
                     explosionPause: 0,
                     e: []});
-        wX = 40;
-        wY = 50;
+        wX = 200;
+        wY = 210;
         wA = Math.PI/2;
         nX = canvasSize - wX;
         nY = canvasSize - wY;
@@ -281,7 +281,7 @@ function automaticUpdate() {
     setTimeout(automaticUpdate, 2000);
 }
 
-var wX = 40, wY = 50, wA = Math.PI/2; // Х, У и угол наклона Wedge
+var wX = 200, wY = 210, wA = Math.PI/2; // Х, У и угол наклона Wedge
 var nX = canvasSize - wX, nY = canvasSize - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
 let k = canvasSize/2;
 
