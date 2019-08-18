@@ -2,204 +2,78 @@ var cvs = document.getElementById("canvas");
 var ctx = cvs.getContext("2d");
 var canvasSize = 800;
 
-//IMAGES
-//  size
+let shotWidth = 6, shotHeight = 1;
+let rotationAngle = Math.PI/50;
+let centerState = 0;
+let keys = [], shots = [];
+let shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 30, shotSpeed = 1, rechargeTime = 500;
+let nitroPower = 0.02;
+let loopStep = 30;
+let deltaTime = 1, M = 140, m = 8;
+let k = canvasSize/2;
+let stars1 = [], stars2 = [], stars3 = [], stars4 = [];
+let stepX = 0.1, stepY = 0.001;
+let color1 = 230, color2 = 50, colorStep1 = -1, colorStep2 = 1;
 
-var wedgeWidth = 47, wedgeHeight = 23;
-var wedgeOriginDeltaX = 20, wedgeOriginDeltaY = 4;
-var needleWidth = 47, needleHeight = 18;
-var shotWidth = 6, shotHeight = 1;
-var centerWidth = 25, centerHeight = 25;
+let wedge = {width: 47, height: 23,
+             originDeltaX: 20, originDeltaY: 4,
+             angle: Math.PI/2, x: 200, y: 210,
+             d: [], nitro: [], nitroState: 0,
+             alive: true, fuelLevel: 3000, shotsNumber: 33, lastShotPause: rechargeTime,
+             weight: m + 10, Fx: 0, Fy: 0, R: 0, ax: 0, ay: 0,
+             speedX: 0, speedY: 0},
+    needle = {width: 47, height: 18,
+              angle: 3 * Math.PI/2, x: 600, y: 590,
+              d: [], nitro: [], nitroState: 0,
+              alive: true, fuelLevel: 3000, shotsNumber: 33, lastShotPause: rechargeTime,
+              weight: m + 10, Fx: 0, Fy: 0, R: 0, ax: 0, ay: 0,
+              speedX: 0, speedY: 0};
 
-//  sources
+wedge.d.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
+wedge.d.push({x: 4, y: 12, r: 19, a1: -Math.acos(-1/Math.sqrt(10)), a2: -Math.acos(14/Math.sqrt(365))});
+wedge.d.push({x: 4, y: -4, r: 19, a1: Math.acos(14/Math.sqrt(365)), a2: Math.acos(-1/Math.sqrt(10))});
+wedge.d.push({x: 12, y: 27, r: 19, a1: -Math.acos(-14/Math.sqrt(365)), a2: -Math.acos(1/Math.sqrt(10))});
+wedge.d.push({x: 20, y: 35, r: 40, a1: -Math.acos(-4/Math.sqrt(65)), a2: -Math.acos(25/Math.sqrt(1586))});
+wedge.d.push({x: 20, y: -27, r: 40, a1: Math.acos(25/Math.sqrt(1586)), a2: Math.acos(-4/Math.sqrt(65))});
+wedge.nitro.push({x: -8, y: 4});
+wedge.nitro.push({x: -12, y: 4});
+wedge.nitro.push({x: -15, y: 4});
+wedge.nitro.push({x: -18, y: 4});
+wedge.nitro.push({x: -22, y: 4});
 
-var wedge = [], wedgeNitro = [];
-var needle = [], needleNitro = [];
+needle.d.push({x: 0, y: 0});
+needle.d.push({x: 13, y: 0});
+needle.d.push({x: 20, y: 6});
+needle.d.push({x: 41, y: 6});
+needle.d.push({x: 47, y: 9});
+needle.d.push({x: 41, y: 12});
+needle.d.push({x: 20, y: 12});
+needle.d.push({x: 13, y: 18});
+needle.d.push({x: 0, y: 18});
+needle.d.push({x: 0, y: 6});
+needle.d.push({x: 0, y: 12});
+needle.nitro.push({x: -8, y: 9});
+needle.nitro.push({x: -12, y: 9});
+needle.nitro.push({x: -15, y: 9});
+needle.nitro.push({x: -18, y: 9});
+needle.nitro.push({x: -22, y: 9});
 
-
-wedge.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
-wedge.push({x: 4, y: 12, r: 19, a1: -Math.acos(-1/Math.sqrt(10)), a2: -Math.acos(14/Math.sqrt(365))});
-wedge.push({x: 4, y: -4, r: 19, a1: Math.acos(14/Math.sqrt(365)), a2: Math.acos(-1/Math.sqrt(10))});
-wedge.push({x: 12, y: 27, r: 19, a1: -Math.acos(-14/Math.sqrt(365)), a2: -Math.acos(1/Math.sqrt(10))});
-wedge.push({x: 20, y: 35, r: 40, a1: -Math.acos(-4/Math.sqrt(65)), a2: -Math.acos(25/Math.sqrt(1586))});
-wedge.push({x: 20, y: -27, r: 40, a1: Math.acos(25/Math.sqrt(1586)), a2: Math.acos(-4/Math.sqrt(65))});
-wedgeNitro.push({x: -8, y: 4});
-wedgeNitro.push({x: -12, y: 4});
-wedgeNitro.push({x: -15, y: 4});
-wedgeNitro.push({x: -18, y: 4});
-wedgeNitro.push({x: -22, y: 4});
-
-needle.push({x: 0, y: 0});
-needle.push({x: 13, y: 0});
-needle.push({x: 20, y: 6});
-needle.push({x: 41, y: 6});
-needle.push({x: 47, y: 9});
-needle.push({x: 41, y: 12});
-needle.push({x: 20, y: 12});
-needle.push({x: 13, y: 18});
-needle.push({x: 0, y: 18});
-needle.push({x: 0, y: 6});
-needle.push({x: 0, y: 12});
-needleNitro.push({x: -8, y: 9});
-needleNitro.push({x: -12, y: 9});
-needleNitro.push({x: -15, y: 9});
-needleNitro.push({x: -18, y: 9});
-needleNitro.push({x: -22, y: 9});
-
-//SERVICE
-var rotationAngle = Math.PI/50; //шаг вращения кораблей
-var centerState = 0, wedgeNitroState = 0, needleNitroState = 0;
-var keys = [], shots = [];
-shots.push({owner: 2,
-            x: 400,
-            y: 390,
-            lifeTime: 71,
-            killer: false,
-            victim: -1,
-            exploded: false,
-            explosionPause: 0,
-            e: []});
-shots.push({owner: 2,
-            x: 410,
-            y: 400,
-            lifeTime: 71,
-            killer: false,
-            victim: -1,
-            exploded: false,
-            explosionPause: 0,
-            e: []});
-shots.push({owner: 2,
-            x: 400,
-            y: 410,
-            lifeTime: 71,
-            killer: false,
-            victim: -1,
-            exploded: false,
-            explosionPause: 0,
-            e: []});
-shots.push({owner: 2,
-            x: 390,
-            y: 400,
-            lifeTime: 71,
-            killer: false,
-            victim: -1,
-            exploded: false,
-            explosionPause: 0,
-            e: []});
-var shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 30, shotSpeed = 1, rechargeTime = 500;
-var wedgeAlive = true, needleAlive = true;
-var wedgeFuelLevel = 3000, needleFuelLevel = 3000, wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
-let nitroPower = 0.02; //МОЩНОСТЬ НИТРО: чем больше, тем сильнее тяга
-    //loop helpers
-let loopStep = 30; // 28 <= loopStep <= 70
-    //gravity helpers
-let dt = 1, M = 140, m = 8 ; //Дельта время, масса звезды, масса корабля
-let needleMass = m + 10, wedgeMass = m + 10;
-let nFx = 0, nFy = 0, nR;
-let nAx, nAy, nVx = nVy = 0;
-let wFx = 0, wFy = 0, wR;
-let wAx, wAy, wVx = wVy = 0;
-
-
-//CONTROLS
-
-function keysControl() {
-    // Wedge
-        // KeyA down - left
-    if (keys[65] && wedgeAlive) {
-        wA -= rotationAngle;
-        while (wA < 0) wA += 2*Math.PI;
-    }
-        // KeyD down - right
-    if (keys[68] && wedgeAlive) {
-        wA += rotationAngle;
-        while (wA > 2*Math.PI) wA -= 2*Math.PI;
-    }
-        // KeyW down - shot
-    if (keys[87] && wedgeShotsNumber > 0 && wedgeLastShotTime >= rechargeTime && wedgeAlive) {
-        shots.push({owner: 0,
-                    angle: wA + Math.PI,
-                    x: wX + (wedgeWidth/2 * Math.cos(wA)) + (4 * Math.cos(wA)),
-                    y: wY + (wedgeWidth/2 * Math.sin(wA)) + (shotWidth * Math.sin(wA)),
-                    lifeTime: 0,
-                    killer: false,
-                    victim: -1,
-                    exploded: false,
-                    explosionPause: 0,
-                    e: []});
-        wedgeShotsNumber--;
-        wedgeLastShotTime = 0;
-    }
-        // KeyS down - nitro
-    if (keys[83] && wedgeFuelLevel > 0 && wedgeAlive) {
-        if (0 <= wA && wA <= Math.PI) {
-            wFy += Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) * nitroPower;
-        } else {
-            wFy -= Math.abs(Math.tan(wA)*Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA)))) * nitroPower;
-        }
-        if (Math.PI/2 <= wA && wA <=3*Math.PI/2) {
-            wFx -= Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))) * nitroPower;
-        } else {
-            wFx += Math.sqrt(10/(1+Math.tan(wA)*Math.tan(wA))) * nitroPower;
-            }
-        if (wedgeNitroState == 0) wedgeNitroState = 1;
-        wedgeFuelLevel -= 1;
-        wedgeMass = m +  wedgeFuelLevel / 300;
-        if (wedgeFuelLevel <= 0) keys[83] = false;
-    }
-        // KeyS up - nitro off
-    if (!keys[83] && wedgeAlive) wedgeNitroState = 0;
-
-    // Needle
-    // KeyJ down - left
-    if (keys[74] && needleAlive) {
-        nA -= rotationAngle;
-        while (nA < 0) nA += 2 * Math.PI;
-    }
-    // KeyL down - right
-    if (keys[76] && needleAlive) {
-        nA += rotationAngle;
-        while (nA > 2*Math.PI) nA -= 2 * Math.PI;
-    }
-    // KeyI down - shot
-    if (keys[73] && needleShotsNumber > 0 && needleLastShotTime >= rechargeTime && needleAlive) {
-        shots.push({owner: 1,
-                    angle: nA + Math.PI,
-                    x: nX + (needleWidth/2 * Math.cos(nA)) + (5 * Math.cos(nA)),
-                    y: nY + (needleWidth/2 * Math.sin(nA)) + (shotWidth * Math.sin(nA)),
-                    lifeTime: 0,
-                    killer: false,
-                    victim: -1,
-                    exploded: false,
-                    explosionPause: 0,
-                    e: []});
-        needleShotsNumber--;
-        needleLastShotTime = 0;
-    }
-    // KeyK down - nitro
-    if (keys[75] && needleFuelLevel > 0 && needleAlive) {
-        nFx = nFy = 0;
-        if (0 <= nA && nA <= Math.PI) {
-            nFy += Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) * nitroPower;
-        } else {
-            nFy -= Math.abs(Math.tan(nA) * Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA)))) * nitroPower;
-        }
-        if (Math.PI/2 <= nA && nA <= 3*Math.PI/2) {
-            nFx -= Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA))) * nitroPower;
-        } else {
-            nFx += Math.sqrt(10 / (1 + Math.tan(nA) * Math.tan(nA))) * nitroPower;
-        }
-        if (needleNitroState == 0) needleNitroState = 1;
-        needleFuelLevel -= 1;
-        needleMass = m +  needleFuelLevel / 300;
-        if (needleFuelLevel <= 0) keys[75] = false;
-    }
-    // KeyK up - nitro off
-    if (!keys[75] && needleAlive) needleNitroState = 0;
-    wedgeLastShotTime += 10;
-    needleLastShotTime += 10;
-    setTimeout(keysControl, 10);
-}
+shots.push({owner: 2, x: 400, y: 390,
+            lifeTime: 1,
+            killer: false, victim: -1,
+            exploded: false, explosionPause: 0, e: []});
+shots.push({owner: 2, x: 410, y: 400,
+            lifeTime: 1,
+            killer: false, victim: -1,
+            exploded: false, explosionPause: 0, e: []});
+shots.push({owner: 2, x: 400, y: 410,
+            lifeTime: 1,
+            killer: false, victim: -1,
+            exploded: false, explosionPause: 0, e: []});
+shots.push({owner: 2, x: 390, y: 400,
+            lifeTime: 1,
+            killer: false, victim: -1,
+            exploded: false, explosionPause: 0, e: []});
 
 document.addEventListener("keydown", function(e) {
     keys[e.keyCode] = true;
@@ -208,6 +82,82 @@ document.addEventListener("keydown", function(e) {
 document.addEventListener("keyup", function(e) {
     keys[e.keyCode] = false;
 });
+
+function keysControl() {
+    if (keys[65] && wedge.alive) {
+        wedge.angle -= rotationAngle;
+        while (wedge.angle < 0) wedge.angle += 2 * Math.PI;
+    }
+    if (keys[68] && wedge.alive) {
+        wedge.angle += rotationAngle;
+        while (wedge.angle > 2 * Math.PI) wedge.angle -= 2 * Math.PI;
+    }
+    if (keys[87] && wedge.shotsNumber > 0 && wedge.lastShotPause >= rechargeTime && wedge.alive) {
+        shots.push({owner: 0, angle: wedge.angle + Math.PI,
+                    x: wedge.x + (wedge.width/2 * Math.cos(wedge.angle)) + (4 * Math.cos(wedge.angle)),
+                    y: wedge.y + (wedge.width/2 * Math.sin(wedge.angle)) + (shotWidth * Math.sin(wedge.angle)),
+                    lifeTime: 0,
+                    killer: false, victim: -1,
+                    exploded: false, explosionPause: 0, e: []});
+        wedge.shotsNumber--;
+        wedge.lastShotPause = 0;
+    }
+    if (keys[83] && wedge.fuelLevel > 0 && wedge.alive) {
+        if (0 <= wedge.angle && wedge.angle <= Math.PI) {
+            wedge.Fy += Math.abs(Math.tan(wedge.angle) * Math.sqrt(10 / (1 + Math.tan(wedge.angle) * Math.tan(wedge.angle)))) * nitroPower;
+        } else {
+            wedge.Fy -= Math.abs(Math.tan(wedge.angle) * Math.sqrt(10 / (1 + Math.tan(wedge.angle) * Math.tan(wedge.angle)))) * nitroPower;
+        }
+        if (Math.PI/2 <= wedge.angle && wedge.angle <= 3 * Math.PI/2) {
+            wedge.Fx -= Math.sqrt(10 / (1 + Math.tan(wedge.angle) * Math.tan(wedge.angle))) * nitroPower;
+        } else {
+            wedge.Fx += Math.sqrt(10 / (1 + Math.tan(wedge.angle) * Math.tan(wedge.angle))) * nitroPower;
+        }
+        if (wedge.nitroState == 0) wedge.nitroState = 1;
+        wedge.fuelLevel -= 1;
+        wedge.weight = m +  wedge.fuelLevel / 300;
+        if (wedge.fuelLevel <= 0) keys[83] = false;
+    }
+    if (!keys[83] && wedge.alive) wedge.nitroState = 0;
+    if (keys[74] && needle.alive) {
+        needle.angle -= rotationAngle;
+        while (needle.angle < 0) needle.angle += 2 * Math.PI;
+    }
+    if (keys[76] && needle.alive) {
+        needle.angle += rotationAngle;
+        while (needle.angle > 2 * Math.PI) needle.angle -= 2 * Math.PI;
+    }
+    if (keys[73] && needle.shotsNumber > 0 && needle.lastShotPause >= rechargeTime && needle.alive) {
+        shots.push({owner: 1, angle: needle.angle + Math.PI,
+                    x: needle.x + (needle.width/2 * Math.cos(needle.angle)) + (5 * Math.cos(needle.angle)),
+                    y: needle.y + (needle.width/2 * Math.sin(needle.angle)) + (shotWidth * Math.sin(needle.angle)),
+                    lifeTime: 0,
+                    killer: false, victim: -1,
+                    exploded: false, explosionPause: 0, e: []});
+        needle.shotsNumber--;
+        needle.lastShotPause = 0;
+    }
+    if (keys[75] && needle.fuelLevel > 0 && needle.alive) {
+        if (0 <= needle.angle && needle.angle <= Math.PI) {
+            needle.Fy += Math.abs(Math.tan(needle.angle) * Math.sqrt(10 / (1 + Math.tan(needle.angle) * Math.tan(needle.angle)))) * nitroPower;
+        } else {
+            needle.Fy -= Math.abs(Math.tan(needle.angle) * Math.sqrt(10 / (1 + Math.tan(needle.angle) * Math.tan(needle.angle)))) * nitroPower;
+        }
+        if (Math.PI/2 <= needle.angle && needle.angle <= 3 * Math.PI/2) {
+            needle.Fx -= Math.sqrt(10 / (1 + Math.tan(needle.angle) * Math.tan(needle.angle))) * nitroPower;
+        } else {
+            needle.Fx += Math.sqrt(10 / (1 + Math.tan(needle.angle) * Math.tan(needle.angle))) * nitroPower;
+        }
+        if (needle.nitroState == 0) needle.nitroState = 1;
+        needle.fuelLevel -= 1;
+        needle.weight = m +  needle.fuelLevel / 300;
+        if (needle.fuelLevel <= 0) keys[75] = false;
+    }
+    if (!keys[75] && needle.alive) needle.nitroState = 0;
+    wedge.lastShotPause += 10;
+    needle.lastShotPause += 10;
+    setTimeout(keysControl, 10);
+}
 
 function shotsControl() {
     let l = shots.length;
@@ -218,45 +168,45 @@ function shotsControl() {
                 shots[i].x += shotSpeed * Math.cos(shots[i].angle - Math.PI);
                 shots[i].y += shotSpeed * Math.sin(shots[i].angle - Math.PI);
             }
-            if (wedgeAlive) {
-                let n = wedge.length;
+            if (wedge.alive) {
+                let n = wedge.d.length;
                 for (let o = 0; o < n; o += 2)
-                    if ((shots[i].x - ((wedge[o].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedge[o].y - wedgeOriginDeltaY) * Math.sin(wA) + wX)) *
-                        (shots[i].x - ((wedge[o].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedge[o].y - wedgeOriginDeltaY) * Math.sin(wA) + wX)) +
-                        (shots[i].y - ((wedge[o].x - wedgeOriginDeltaX) * Math.sin(wA) + (wedge[o].y - wedgeOriginDeltaY) * Math.cos(wA) + wY)) *
-                        (shots[i].y - ((wedge[o].x - wedgeOriginDeltaX) * Math.sin(wA) + (wedge[o].y - wedgeOriginDeltaY) * Math.cos(wA) + wY)) <=
-                        wedge[o].r * wedge[o].r &&
-                        (shots[i].x - ((wedge[o+1].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedge[o+1].y - wedgeOriginDeltaY) * Math.sin(wA) + wX)) *
-                        (shots[i].x - ((wedge[o+1].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedge[o+1].y - wedgeOriginDeltaY) * Math.sin(wA) + wX)) +
-                        (shots[i].y - ((wedge[o+1].x - wedgeOriginDeltaX) * Math.sin(wA) + (wedge[o+1].y - wedgeOriginDeltaY) * Math.cos(wA) + wY)) *
-                        (shots[i].y - ((wedge[o+1].x - wedgeOriginDeltaX) * Math.sin(wA) + (wedge[o+1].y - wedgeOriginDeltaY) * Math.cos(wA) + wY)) <=
-                        wedge[o+1].r * wedge[o+1].r &&
-                        (o != 4 || shots[i].x > wX - wedgeOriginDeltaX)) {
+                    if ((shots[i].x - ((wedge.d[o].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x)) *
+                        (shots[i].x - ((wedge.d[o].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x)) +
+                        (shots[i].y - ((wedge.d[o].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y)) *
+                        (shots[i].y - ((wedge.d[o].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y)) <=
+                        wedge.d[o].r * wedge.d[o].r &&
+                        (shots[i].x - ((wedge.d[o+1].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o+1].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x)) *
+                        (shots[i].x - ((wedge.d[o+1].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o+1].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x)) +
+                        (shots[i].y - ((wedge.d[o+1].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o+1].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y)) *
+                        (shots[i].y - ((wedge.d[o+1].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o+1].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y)) <=
+                        wedge.d[o+1].r * wedge.d[o+1].r /*&&
+                        (o != 4 || shots[i].x > wedge.x - wedge.originDeltaX)*/) {
                         shots[i].killer = true;
                         shots[i].victim = 0;
-                        wedgeAlive = false;
+                        wedge.alive = false;
                     }
             }
-            if (needleAlive) {
-                let n = needle.length - 2, c = false, j = n - 1;
+            if (needle.alive) {
+                let n = needle.d.length - 2, c = false, j = n - 1;
                 for (let o = 0; o < n; o++) {
-                    if ((((((needle[o].x - needleWidth/2) * Math.sin(nA) + (needle[o].y - needleHeight/2) * Math.cos(nA) + nY) <= shots[i].y) &&
-                        (shots[i].y < ((needle[j].x - needleWidth/2) * Math.sin(nA) + (needle[j].y - needleHeight/2) * Math.cos(nA) + nY))) ||
-                        ((((needle[j].x - needleWidth/2) * Math.sin(nA) + (needle[j].y - needleHeight/2) * Math.cos(nA) + nY) <= shots[i].y) &&
-                        (shots[i].y < ((needle[o].x - needleWidth/2) * Math.sin(nA) + (needle[o].y - needleHeight/2) * Math.cos(nA) + nY)))) &&
-                        (shots[i].x > (((needle[j].x - needleWidth/2) * Math.cos(nA) - (needle[j].y - needleHeight/2) * Math.sin(nA) + nX) -
-                        ((needle[o].x - needleWidth/2) * Math.cos(nA) - (needle[o].y - needleHeight/2) * Math.sin(nA) + nX)) *
-                        (shots[i].y - ((needle[o].x - needleWidth/2) * Math.sin(nA) + (needle[o].y - needleHeight/2) * Math.cos(nA) + nY)) /
-                        (((needle[j].x - needleWidth/2) * Math.sin(nA) + (needle[j].y - needleHeight/2) * Math.cos(nA) + nY) -
-                        ((needle[o].x - needleWidth/2) * Math.sin(nA) + (needle[o].y - needleHeight/2) * Math.cos(nA) + nY)) +
-                        ((needle[o].x - needleWidth/2) * Math.cos(nA) - (needle[o].y - needleHeight/2) * Math.sin(nA) + nX)))
+                    if ((((((needle.d[o].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[o].y - needle.height/2) * Math.cos(needle.angle) + needle.y) <= shots[i].y) &&
+                        (shots[i].y < ((needle.d[j].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[j].y - needle.height/2) * Math.cos(needle.angle) + needle.y))) ||
+                        ((((needle.d[j].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[j].y - needle.height/2) * Math.cos(needle.angle) + needle.y) <= shots[i].y) &&
+                        (shots[i].y < ((needle.d[o].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[o].y - needle.height/2) * Math.cos(needle.angle) + needle.y)))) &&
+                        (shots[i].x > (((needle.d[j].x - needle.width/2) * Math.cos(needle.angle) - (needle.d[j].y - needle.height/2) * Math.sin(needle.angle) + needle.x) -
+                        ((needle.d[o].x - needle.width/2) * Math.cos(needle.angle) - (needle.d[o].y - needle.height/2) * Math.sin(needle.angle) + needle.x)) *
+                        (shots[i].y - ((needle.d[o].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[o].y - needle.height/2) * Math.cos(needle.angle) + needle.y)) /
+                        (((needle.d[j].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[j].y - needle.height/2) * Math.cos(needle.angle) + needle.y) -
+                        ((needle.d[o].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[o].y - needle.height/2) * Math.cos(needle.angle) + needle.y)) +
+                        ((needle.d[o].x - needle.width/2) * Math.cos(needle.angle) - (needle.d[o].y - needle.height/2) * Math.sin(needle.angle) + needle.x)))
                         c = !c;
                         j = o;
                     }
                 if (c) {
                     shots[i].killer = true;
                     shots[i].victim = 1;
-                    needleAlive = false;
+                    needle.alive = false;
                 }
             }
         } else if (shots[i].explosionPause >= shotMaximumExlposionPause) {
@@ -273,233 +223,209 @@ function automaticUpdate() {
     for (let s of shots)
         if (s.explosionPause > 0 && s.explosionPause < shotMaximumExlposionPause)
             e = false;
-    if ((!wedgeAlive || !needleAlive) && e) {
-        wedgeNitroState = 0;
-        needleNitroState = 0;
+    if ((!wedge.alive || !needle.alive) && e) {
+        wedge.nitroState = 0;
+        needle.nitroState = 0;
         shots.length = 0;
-        shots.push({owner: 2,
-                    x: 400,
-                    y: 390,
-                    lifeTime: 71,
-                    killer: false,
-                    victim: -1,
-                    exploded: false,
-                    explosionPause: 0,
-                    e: []});
-        shots.push({owner: 2,
-                    x: 410,
-                    y: 400,
-                    lifeTime: 71,
-                    killer: false,
-                    victim: -1,
-                    exploded: false,
-                    explosionPause: 0,
-                    e: []});
-        shots.push({owner: 2,
-                    x: 400,
-                    y: 410,
-                    lifeTime: 71,
-                    killer: false,
-                    victim: -1,
-                    exploded: false,
-                    explosionPause: 0,
-                    e: []});
-        shots.push({owner: 2,
-                    x: 390,
-                    y: 400,
-                    lifeTime: 71,
-                    killer: false,
-                    victim: -1,
-                    exploded: false,
-                    explosionPause: 0,
-                    e: []});
-        wX = 200;
-        wY = 210;
-        wA = Math.PI/2;
-        nX = canvasSize - wX;
-        nY = canvasSize - wY;
-        nA = 3*Math.PI/2;
-        wVx = wVy = 0;
-        nVx = nVy = 0;
-        wedgeMass = 18;
-        needleMass = 18;
-        wedgeFuelLevel = 3000;
-        needleFuelLevel = 3000;
-        wedgeShotsNumber = 33;
-        wedgeLastShotTime = rechargeTime;
-        needleShotsNumber = 33;
-        needleLastShotTime = rechargeTime;
-        wedgeAlive = true;
-        needleAlive = true;
+        shots.push({owner: 2, x: 400, y: 390,
+                    lifeTime: 1,
+                    killer: false, victim: -1,
+                    exploded: false, explosionPause: 0, e: []});
+        shots.push({owner: 2, x: 410, y: 400,
+                    lifeTime: 1,
+                    killer: false, victim: -1,
+                    exploded: false, explosionPause: 0, e: []});
+        shots.push({owner: 2, x: 400, y: 410,
+                    lifeTime: 1,
+                    killer: false, victim: -1,
+                    exploded: false, explosionPause: 0, e: []});
+        shots.push({owner: 2, x: 390, y: 400,
+                    lifeTime: 1,
+                    killer: false, victim: -1,
+                    exploded: false, explosionPause: 0, e: []});
+        wedge.x = 200;
+        wedge.y = 210;
+        wedge.angle = Math.PI/2;
+        needle.x = 600;
+        needle.y = 590;
+        needle.angle = 3 * Math.PI/2;
+        wedge.speedX = wedge.speedY = 0;
+        needle.speedX = needle.speedY = 0;
+        wedge.weight = needle.weight = m + 10;
+        wedge.fuelLevel = needle.fuelLevel = 3000;
+        wedge.shotsNumber = needle.shotsNumber = 33;
+        wedge.lastShotPause = needle.lastShotPause = rechargeTime;
+        wedge.alive = needle.alive = true;
     }
     setTimeout(automaticUpdate, 2000);
 }
 
-var wX = 200, wY = 210, wA = Math.PI/2; // Х, У и угол наклона Wedge
-var nX = canvasSize - wX, nY = canvasSize - wY, nA = 3*Math.PI/2; // Х, У и угол наклона Needle
-let k = canvasSize/2;
-
-//GRAVITY
-
-function gravityStep(){
-
-    nR =  Math.sqrt((nX - k)  * (nX - k) + (nY - k) * (nY - k));
-    if (Math.abs(nR) > 4) {
-          nFx += -(nX - k) / Math.sqrt(nR) * M / (nR * nR); // Fx′ = −(x−x′)/√r × M/r²,
-          nFy += -(nY - k) / Math.sqrt(nR) * M / (nR * nR); // Fy′ = −(y−y′)/√r × M/r²
-
-          nAx = nFx / needleMass; //ax = Fx/m
-          nAy = nFy / needleMass; //ay = Fy/m
-          nVx += nAx * dt; //vx* = vx + ax·Δt
-          nVy += nAy * dt; //vy* = vy + ay·Δt
-          nX += nVx * dt + nAx * dt * dt / 2; //x* = x + vx·Δt + ax·Δt²/2
-          nY += nVy * dt + nAy * dt * dt / 2; //y* = y = vy·Δt + ay·Δt²/2
-          nFx = nFy = 0;
-          }
-
-          wR =  Math.sqrt((wX - k)  * (wX - k) + (wY - k) * (wY - k));
-          if (wR > 4) {
-          wFx += -(wX - k) / Math.sqrt(wR) * M / (wR * wR); // Fx′ = −(x−x′)/√r × M/r²,
-          wFy += -(wY - k) / Math.sqrt(wR) * M / (wR * wR); // Fy′ = −(y−y′)/√r × M/r²
-
-          wAx = wFx / wedgeMass; //ax = Fx/ma
-          wAy = wFy / wedgeMass; //ay = Fy/m
-          wVx += wAx * dt; //vx* = vx + ax·Δt
-          wVy += wAy * dt; //vy* = vy + ay·Δt
-          wX += wVx * dt + wAx * dt * dt / 2; //x* = x + vx·Δt + ax·Δt²/2
-          wY += wVy * dt + wAy * dt * dt / 2; //y* = y = vy·Δt + ay·Δt²/2
-          wFx =  wFy = 0;
+function gravityStep() {
+    wedge.R = Math.sqrt((wedge.x - k) * (wedge.x - k) + (wedge.y - k) * (wedge.y - k));
+    if (wedge.R > 4) {
+        wedge.Fx += -(wedge.x - k) / Math.sqrt(wedge.R) * M / (wedge.R * wedge.R); // Fx′ = −(x−x′)/√r × M/r²,
+        wedge.Fy += -(wedge.y - k) / Math.sqrt(wedge.R) * M / (wedge.R * wedge.R); // Fy′ = −(y−y′)/√r × M/r²
+        wedge.ax = wedge.Fx / wedge.weight; //ax = Fx/m
+        wedge.ay = wedge.Fy / wedge.weight; //ay = Fy/m
+        wedge.speedX += wedge.ax * deltaTime; //vx* = vx + ax·Δt
+        wedge.speedY += wedge.ay * deltaTime; //vy* = vy + ay·Δt
+        wedge.x += wedge.speedX * deltaTime + wedge.ax * deltaTime * deltaTime / 2; //x* = x + vx·Δt + ax·Δt²/2
+        wedge.y += wedge.speedY * deltaTime + wedge.ay * deltaTime * deltaTime / 2; //y* = y = vy·Δt + ay·Δt²/2
+        wedge.Fx =  wedge.Fy = 0;
+    }
+    needle.R = Math.sqrt((needle.x - k) * (needle.x - k) + (needle.y - k) * (needle.y - k));
+    if (needle.R > 4) {
+        needle.Fx += -(needle.x - k) / Math.sqrt(needle.R) * M / (needle.R * needle.R); // Fx′ = −(x−x′)/√r × M/r²,
+        needle.Fy += -(needle.y - k) / Math.sqrt(needle.R) * M / (needle.R * needle.R); // Fy′ = −(y−y′)/√r × M/r²
+        needle.ax = needle.Fx / needle.weight; //ax = Fx/m
+        needle.ay = needle.Fy / needle.weight; //ay = Fy/m
+        needle.speedX += needle.ax * deltaTime; //vx* = vx + ax·Δt
+        needle.speedY += needle.ay * deltaTime; //vy* = vy + ay·Δt
+        needle.x += needle.speedX * deltaTime + needle.ax * deltaTime * deltaTime / 2; //x* = x + vx·Δt + ax·Δt²/2
+        needle.y += needle.speedY * deltaTime + needle.ay * deltaTime * deltaTime / 2; //y* = y = vy·Δt + ay·Δt²/2
+        needle.Fx =  needle.Fy = 0;
     }
 }
 
-
-
-function isLoop(){ //Зацикливание кораблей, шаг см. в SERVICE
-
-  //wedge
-  if (wX > canvasSize + loopStep) wX = -loopStep;
-  if (wX < -loopStep) wX = canvasSize + loopStep;
-  if (wY > canvasSize + loopStep) wY = -loopStep;
-  if (wY < -loopStep) wY = canvasSize + loopStep;
-
-  //needle
-  if (nX > canvasSize + loopStep) nX = -loopStep;
-  if (nX < -loopStep) nX = canvasSize + loopStep;
-  if (nY > canvasSize + loopStep) nY = -loopStep;
-  if (nY < -loopStep) nY = canvasSize + loopStep;
-
-  //shots
+function isLoop() {
+  if (wedge.x > canvasSize + loopStep) wedge.x = -loopStep;
+  if (wedge.x < -loopStep) wedge.x = canvasSize + loopStep;
+  if (wedge.y > canvasSize + loopStep) wedge.y = -loopStep;
+  if (wedge.y < -loopStep) wedge.y = canvasSize + loopStep;
+  if (needle.x > canvasSize + loopStep) needle.x = -loopStep;
+  if (needle.x < -loopStep) needle.x = canvasSize + loopStep;
+  if (needle.y > canvasSize + loopStep) needle.y = -loopStep;
+  if (needle.y < -loopStep) needle.y = canvasSize + loopStep;
   for (let s of shots) {
-      if (s.x >= canvasSize + 6) s.x = 0;
-      if (s.x <= -6) s.x = canvasSize;
-      if (s.y >= canvasSize + 6) s.y = 0;
-      if (s.y <= -6) s.y = canvasSize;
+      if (s.x >= canvasSize + shotWidth) s.x = 0;
+      if (s.x <= -shotWidth) s.x = canvasSize;
+      if (s.y >= canvasSize + shotWidth) s.y = 0;
+      if (s.y <= -shotWidth) s.y = canvasSize;
   }
 }
 
-
-//Stars Generation
-let stars1 = [];
-let stars2 = [];
-let stars3 = [];
-let stars4 = [];
-
-for (let i = 0; i < 15; i++){
-    stars1.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
-}
-for (let i = 0; i < 15; i++){
-    stars2.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
-}
-for (let i = 0; i < 50; i++){
-    stars2.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
-}
-for (let i = 0; i < 70; i++){
-    stars3.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+function starsGeneration() {
+    for (let i = 0; i < 15; i++)
+        stars1.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+    for (let i = 0; i < 15; i++)
+        stars2.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+    for (let i = 0; i < 50; i++)
+        stars2.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
+    for (let i = 0; i < 70; i++)
+        stars3.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
 }
 
-//DRAWINGS
-let  stepX = 0.1, stepY = 0.001; //скорость прокручивания фона
-
-let color1 = 230, color2 = 50, colorStep1 = -1, colorStep2 = 1; //скорость мерцания звезд на фоне
-function ExpensivePlanetarium(){
-
-  ctx.fillStyle = "black";
-  ctx.fillRect(0,0,800,800);
-
-
-  ctx.strokeStyle = 'rgb(' + color1 + ',' + color1 + ',' + color1 + ')';
-  ctx.fillStyle = ctx.strokeStyle ;
-
-  stars1.forEach(function(elem){
-    ctx.beginPath();
-    ctx.arc(elem.x, elem.y, 1, 0, 2*Math.PI, false);
-    elem.x-=stepX;
-    elem.y-=stepY;
-    if (elem.x <= 0) elem.x = 1000;
-    if (elem.y <= 0) elem.y = 1000;
-    ctx.fill();
-    ctx.stroke();
-
-  });
-  ctx.strokeStyle = 'rgb(' + color2 + ',' + color2 + ',' + color2 + ')';
-  ctx.fillStyle = ctx.strokeStyle ;
-  stars2.forEach(function(elem){
-    ctx.beginPath();
-    ctx.arc(elem.x, elem.y, 0.6, 0, 2*Math.PI, false);
-    elem.x-=stepX;
-    elem.y-=stepY;
-    if (elem.x <= 0) elem.x = 1000;
-    if (elem.y <= 0) elem.y = 1000;
-    ctx.fill();
-    ctx.stroke();
-
-  });
-  ctx.strokeStyle = 'rgb(' + color1 + ',' + color1 + ',' + color1 + ')';
-  ctx.fillStyle = ctx.strokeStyle ;
-
-  stars3.forEach(function(elem){
-    ctx.beginPath();
-    ctx.arc(elem.x, elem.y, 0.3, 0, 2*Math.PI, false);
-    elem.x-=stepX;
-    elem.y-=stepY;
-    if (elem.x <= 0) elem.x = 1000;
-    if (elem.y <= 0) elem.y = 1000;
-    ctx.fill();
-    ctx.stroke();
-
-  });
-  ctx.strokeStyle = 'rgb(' + color2 + ',' + color2 + ',' + color2 + ')';
-  ctx.fillStyle = ctx.strokeStyle ;
-  stars4.forEach(function(elem){
-    ctx.beginPath();
-    ctx.arc(elem.x, elem.y, 0.2, 0, 2*Math.PI, false);
-    elem.x-=stepX;
-    elem.y-=stepY;
-    if (elem.x <= 0) elem.x = 1000;
-    if (elem.y <= 0) elem.y = 1000;
-    ctx.fill();
-    ctx.stroke();
-  });
-
-  color1 += colorStep1;
-  color2 += colorStep2;
-
-  if (color1 < 50 || color1 > 230) colorStep1*=-1;
-  if (color2 < 50 || color2 > 230) colorStep2*=-1;
-
-}
 function draw() {
+    expensivePlanetarium();
+    drawShots();
+    if (wedge.alive) {
+        ctx.save();
+        ctx.translate(wedge.x, wedge.y);
+        ctx.rotate(wedge.angle);
+        ctx.translate(-wedge.originDeltaX, -wedge.originDeltaY);
+        if (wedge.nitroState > 0 && wedge.nitroState <= 20) wedge.nitroState++;
+        drawWedge();
+        ctx.restore();
+    }
+    if (needle.alive) {
+        ctx.save();
+        ctx.translate(needle.x, needle.y);
+        ctx.rotate(needle.angle);
+        ctx.translate(-needle.width/2, -needle.height/2);
+        if (needle.nitroState > 0 && needle.nitroState <= 20) needle.nitroState++;
+        drawNeedle();
+        ctx.restore();
+    }
+    if (centerState < 20 || centerState == 40) {
+        ctx.save();
+        ctx.translate(canvasSize/2, canvasSize/2);
+        ctx.rotate(Math.PI/4);
+        ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1);
+        drawSun(6,2);
+        ctx.restore();
+        drawSun(10,2);
+        if (centerState < 20) centerState++;
+        else centerState = 1;
+    } else {
+        ctx.save();
+        ctx.translate(canvasSize/2, canvasSize/2);
+        ctx.rotate(Math.PI/4);
+        ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1);
+        drawSun(10,2);
+        ctx.restore();
+        drawSun(6,2);
+        centerState++;
+    }
+    gravityStep();
+    isLoop();
+    requestAnimationFrame(draw);
+}
 
-    ExpensivePlanetarium();
+function expensivePlanetarium() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, 800, 800);
+    ctx.strokeStyle = "rgb(" + color1 + "," + color1 + "," + color1 + ")";
+    ctx.fillStyle = ctx.strokeStyle ;
+    stars1.forEach(function(elem) {
+        ctx.beginPath();
+        ctx.arc(elem.x, elem.y, 1, 0, 2*Math.PI, false);
+        elem.x -= stepX;
+        elem.y -= stepY;
+        if (elem.x <= 0) elem.x = 1000;
+        if (elem.y <= 0) elem.y = 1000;
+        ctx.fill();
+        ctx.stroke();
+    });
+    ctx.strokeStyle = "rgb(" + color2 + "," + color2 + "," + color2 + ")";
+    ctx.fillStyle = ctx.strokeStyle ;
+    stars2.forEach(function(elem) {
+        ctx.beginPath();
+        ctx.arc(elem.x, elem.y, 0.6, 0, 2*Math.PI, false);
+        elem.x -= stepX;
+        elem.y -= stepY;
+        if (elem.x <= 0) elem.x = 1000;
+        if (elem.y <= 0) elem.y = 1000;
+        ctx.fill();
+        ctx.stroke();
+    });
+    ctx.strokeStyle = "rgb(" + color1 + "," + color1 + "," + color1 + ")";
+    ctx.fillStyle = ctx.strokeStyle ;
+    stars3.forEach(function(elem) {
+        ctx.beginPath();
+        ctx.arc(elem.x, elem.y, 0.3, 0, 2*Math.PI, false);
+        elem.x -= stepX;
+        elem.y -= stepY;
+        if (elem.x <= 0) elem.x = 1000;
+        if (elem.y <= 0) elem.y = 1000;
+        ctx.fill();
+        ctx.stroke();
+    });
+    ctx.strokeStyle = "rgb(" + color2 + "," + color2 + "," + color2 + ")";
+    ctx.fillStyle = ctx.strokeStyle ;
+    stars4.forEach(function(elem) {
+        ctx.beginPath();
+        ctx.arc(elem.x, elem.y, 0.2, 0, 2*Math.PI, false);
+        elem.x -= stepX;
+        elem.y -= stepY;
+        if (elem.x <= 0) elem.x = 1000;
+        if (elem.y <= 0) elem.y = 1000;
+        ctx.fill();
+        ctx.stroke();
+    });
+    color1 += colorStep1;
+    color2 += colorStep2;
+    if (color1 < 50 || color1 > 230) colorStep1 *= -1;
+    if (color2 < 50 || color2 > 230) colorStep2 *= -1;
+}
 
-    //shots
+function drawShots() {
     ctx.fillStyle = "white";
     for (let s of shots) {
         if (s.killer) {
             if (!s.exploded) {
                 let n = 100;
-                if (s.victim == 0) n = 50 + (50 * wedgeFuelLevel / 3000);
-                else if (s.victim == 1) n = 50 + (50 * needleFuelLevel / 3000);
+                if (s.victim == 0) n = 50 + (50 * wedge.fuelLevel / 3000);
+                else if (s.victim == 1) n = 50 + (50 * needle.fuelLevel / 3000);
                 for (let i = 0; i < n; i++) {
                     let x = 0, y = 0;
                     while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
@@ -518,8 +444,8 @@ function draw() {
                 if (s.explosionPause == 10) {
                     s.e.length = 0;
                     let n = 75;
-                    if (s.victim == 0) n = 38 + (37 * wedgeFuelLevel / 3000);
-                    else if (s.victim == 1) n = 38 + (37 * needleFuelLevel / 3000);
+                    if (s.victim == 0) n = 38 + (37 * wedge.fuelLevel / 3000);
+                    else if (s.victim == 1) n = 38 + (37 * needle.fuelLevel / 3000);
                     for (let i = 0; i < n; i++) {
                         let x = 0, y = 0;
                         while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
@@ -539,8 +465,8 @@ function draw() {
                 if (s.explosionPause == 20) {
                     s.e.length = 0;
                     let n = 50;
-                    if (s.victim == 0) n = 25 + (25 * wedgeFuelLevel / 3000);
-                    else if (s.victim == 1) n = 25 + (25 * needleFuelLevel / 3000);
+                    if (s.victim == 0) n = 25 + (25 * wedge.fuelLevel / 3000);
+                    else if (s.victim == 1) n = 25 + (25 * needle.fuelLevel / 3000);
                     for (let i = 0; i < n; i++) {
                         let x = 0, y = 0;
                         while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
@@ -582,106 +508,45 @@ function draw() {
             s.explosionPause += 3;
         }
     }
-
-    //ships' rotation
-        //wedge
-    if (wedgeAlive) {
-        ctx.save();
-        ctx.translate(wX, wY);
-        ctx.rotate(wA);
-        ctx.translate( - wedgeOriginDeltaX, - wedgeOriginDeltaY);
-        if (wedgeNitroState > 0 && wedgeNitroState <= 20) wedgeNitroState++;
-        drawWedge();
-        ctx.restore();
-    }
-        //needle
-    if (needleAlive) {
-        ctx.save();
-        ctx.translate(nX, nY);
-        ctx.rotate(nA);
-        ctx.translate(- needleWidth/2, - needleHeight/2);
-        if (needleNitroState > 0 && needleNitroState <= 20) needleNitroState++;
-        drawNeedle();
-        ctx.restore();
-    }
-
-    //center's rotation
-   if (centerState < 20 || centerState == 40) {
-         ctx.save();
-         ctx.translate(canvasSize/2, canvasSize/2);
-         ctx.rotate(Math.PI/4);
-         ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1  );
-         drawSun(6,2);
-         ctx.restore();
-         drawSun(10,2);
-        if (centerState < 20) centerState++;
-        else centerState = 1;
-    } else {
-        ctx.save();
-        ctx.translate(canvasSize/2, canvasSize/2);
-        ctx.rotate(Math.PI/4);
-        ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1  );
-        drawSun(10,2);
-        ctx.restore();
-        drawSun(6,2);
-        centerState++;
-    }
-
-    //gravity effect
-    gravityStep();
-    isLoop();
-    ctx.closePath();
-    requestAnimationFrame(draw);
-
 }
 
-
-function drawSun(l,r){
-
+function drawSun(l, r) {
     ctx.fillStyle = "white";
     ctx.strokeStyle = "white";
-
     ctx.beginPath();
     ctx.moveTo(canvasSize/2 - r, canvasSize/2);
     ctx.lineTo(canvasSize/2, canvasSize/2 - l);
-
     ctx.lineTo(canvasSize/2 + r, canvasSize/2);
     ctx.lineTo(canvasSize/2 + r + l, canvasSize/2 + r);
-
     ctx.lineTo(canvasSize/2 + r, canvasSize/2 + 2*r) ;
     ctx.lineTo(canvasSize/2, canvasSize/2 + 2 * r + l);
-
     ctx.lineTo(canvasSize/2 - r, canvasSize/2 + 2 * r);
     ctx.lineTo(canvasSize/2 - r - l, canvasSize/2 + r);
-
     ctx.closePath();
     ctx.fill();
-
 }
 
 function drawWedge() {
-    if (wX != 400 && wY != 400) {
-        ctx.fillStyle = "black";
-        ctx.strokeStyle = "white";
+    ctx.fillStyle = "black";
+    ctx.strokeStyle = "white";
+    ctx.moveTo(0, 0);
+    let n = wedge.d.length;
+    for (let i = 0; i < n; i += 2) {
+        ctx.beginPath();
+        ctx.arc(wedge.d[i].x, wedge.d[i].y, wedge.d[i].r, wedge.d[i].a1, wedge.d[i].a2, false);
+        ctx.arc(wedge.d[i+1].x, wedge.d[i+1].y, wedge.d[i+1].r, wedge.d[i+1].a1, wedge.d[i+1].a2, false);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    }
+    if (wedge.nitroState > 0) {
+        ctx.beginPath();
         ctx.moveTo(0, 0);
-        let n = wedge.length;
-        for (let i = 0; i < n; i += 2) {
-            ctx.beginPath();
-            ctx.arc(wedge[i].x, wedge[i].y, wedge[i].r, wedge[i].a1, wedge[i].a2, false);
-            ctx.arc(wedge[i+1].x, wedge[i+1].y, wedge[i+1].r, wedge[i+1].a1, wedge[i+1].a2, false);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-        }
-        if (wedgeNitroState > 0) {
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(wedgeNitro[Math.floor(wedgeNitroState/5)].x, wedgeNitro[Math.floor(wedgeNitroState/5)].y);
-            ctx.lineTo(0, 8);
-            ctx.closePath();
-            ctx.fillStyle = "white";
-            ctx.fill();
-        }
+        ctx.lineTo(wedge.nitro[Math.floor(wedge.nitroState/5)].x, wedge.nitro[Math.floor(wedge.nitroState/5)].y);
+        ctx.lineTo(0, 8);
+        ctx.closePath();
+        ctx.fillStyle = "white";
+        ctx.fill();
     }
 }
 
@@ -690,23 +555,23 @@ function drawNeedle() {
     ctx.strokeStyle = "white";
     ctx.beginPath();
     ctx.moveTo(0, 0);
-    let n = needle.length;
-    for (let i = 1; i < n - 2; i++) ctx.lineTo(needle[i].x, needle[i].y);
+    let n = needle.d.length;
+    for (let i = 1; i < n - 2; i++) ctx.lineTo(needle.d[i].x, needle.d[i].y);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(needle[n-2].x, needle[n-2].y);
-    ctx.lineTo(needle[2].x, needle[2].y);
-    ctx.moveTo(needle[n-1].x, needle[n-1].y);
-    ctx.lineTo(needle[6].x, needle[6].y);
-    ctx.moveTo(needle[n-2].x, needle[n-2].y);
+    ctx.moveTo(needle.d[n-2].x, needle.d[n-2].y);
+    ctx.lineTo(needle.d[2].x, needle.d[2].y);
+    ctx.moveTo(needle.d[n-1].x, needle.d[n-1].y);
+    ctx.lineTo(needle.d[6].x, needle.d[6].y);
+    ctx.moveTo(needle.d[n-2].x, needle.d[n-2].y);
     ctx.closePath();
     ctx.stroke();
-    if (needleNitroState > 0) {
+    if (needle.nitroState > 0) {
         ctx.beginPath();
         ctx.moveTo(0, 2);
-        ctx.lineTo(needleNitro[Math.floor(needleNitroState/5)].x, needleNitro[Math.floor(needleNitroState/5)].y);
+        ctx.lineTo(needle.nitro[Math.floor(needle.nitroState/5)].x, needle.nitro[Math.floor(needle.nitroState/5)].y);
         ctx.lineTo(0, 16);
         ctx.closePath();
         ctx.fillStyle = "white";
@@ -714,7 +579,8 @@ function drawNeedle() {
     }
 }
 
-  draw();
-  keysControl();
-  shotsControl();
-  automaticUpdate();
+starsGeneration();
+draw();
+keysControl();
+shotsControl();
+automaticUpdate();
