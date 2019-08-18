@@ -60,12 +60,12 @@ shots.push({x: 400,
 var shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 30, shotSpeed = 1, rechargeTime = 500;
 var wedgeAlive = true, needleAlive = true;
 var wedgeFuelLevel = 3000, needleFuelLevel = 3000, wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
-let nitroPower = 0.05; //МОЩНОСТЬ НИТРО: чем больше, тем сильнее тяга
+let nitroPower = 0.02; //МОЩНОСТЬ НИТРО: чем больше, тем сильнее тяга
     //loop helpers
 let loopStep = 30; // 28 <= loopStep <= 70
     //gravity helpers
-let dt = 1, M = 180, m = 8 ; //Дельта время, масса звезды, масса корабля
-let needleMass = 18, wedgeMass = 18;
+let dt = 1, M = 140, m = 8 ; //Дельта время, масса звезды, масса корабля
+let needleMass = m + 10, wedgeMass = m + 10;
 let nFx = 0, nFy = 0, nR;
 let nAx, nAy, nVx = nVy = 0;
 let wFx = 0, wFy = 0, wR;
