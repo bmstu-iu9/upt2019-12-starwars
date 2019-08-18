@@ -248,7 +248,11 @@ function shotsControl() {
 }
 
 function automaticUpdate() {
-    if (!wedgeAlive || !needleAlive) {
+    let e = true;
+    for (let s of shots)
+        if (s.explosionPause > 0 && s.explosionPause < shotMaximumExlposionPause)
+            e = false;
+    if ((!wedgeAlive || !needleAlive) && e) {
         wedgeNitroState = 0;
         needleNitroState = 0;
         shots.length = 0;
