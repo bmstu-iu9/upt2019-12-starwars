@@ -487,32 +487,40 @@ function draw() {
     }
 
     //center's rotation
-  /*  if (centerState < 20 || centerState == 40) {
-        ctx.save();
-        ctx.translate(canvasSize/2, canvasSize/2);
-        ctx.rotate(Math.PI/4);
-        ctx.drawImage(center, -centerWidth/2, -centerHeight/2);
-        ctx.restore();
+   if (centerState < 20 || centerState == 40) {
+         ctx.save();
+         ctx.translate(canvasSize/2, canvasSize/2);
+         ctx.rotate(Math.PI/4);
+         ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1  );
+         drawSun(6,2);
+         ctx.restore();
+         drawSun(10,2);
         if (centerState < 20) centerState++;
         else centerState = 1;
     } else {
-        ctx.drawImage(center, cX, cY);
+        ctx.save();
+        ctx.translate(canvasSize/2, canvasSize/2);
+        ctx.rotate(Math.PI/4);
+        ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1  );
+        drawSun(10,2);
+        ctx.restore();
+        drawSun(6,2);
         centerState++;
     }
-*/
+
     //gravity effect
     gravityStep();
     isLoop();
 
-
+/*
     ctx.save();
     ctx.translate(canvasSize/2, canvasSize/2);
     ctx.rotate(Math.PI/4);
     ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1  );
     drawSun(6,2);
     ctx.restore();
-    drawSun(8,2);
-
+    drawSun(10,2);
+    */
     ctx.beginPath();
     ctx.fillStyle = "green";
     ctx.arc(400, 400, 3, 0, 2*Math.PI, false);
