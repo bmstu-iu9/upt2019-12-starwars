@@ -29,34 +29,36 @@ let wedge = {width: 47, height: 23,
               weight: m + 10, Fx: 0, Fy: 0, R: 0, ax: 0, ay: 0,
               speedX: 0, speedY: 0};
 
-wedge.d.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
-wedge.d.push({x: 4, y: 12, r: 19, a1: -Math.acos(-1/Math.sqrt(10)), a2: -Math.acos(14/Math.sqrt(365))});
-wedge.d.push({x: 4, y: -4, r: 19, a1: Math.acos(14/Math.sqrt(365)), a2: Math.acos(-1/Math.sqrt(10))});
-wedge.d.push({x: 12, y: 27, r: 19, a1: -Math.acos(-14/Math.sqrt(365)), a2: -Math.acos(1/Math.sqrt(10))});
-wedge.d.push({x: 20, y: 35, r: 40, a1: -Math.acos(-4/Math.sqrt(65)), a2: -Math.acos(25/Math.sqrt(1586))});
-wedge.d.push({x: 20, y: -27, r: 40, a1: Math.acos(25/Math.sqrt(1586)), a2: Math.acos(-4/Math.sqrt(65))});
-wedge.nitro.push({x: -8, y: 4});
-wedge.nitro.push({x: -12, y: 4});
-wedge.nitro.push({x: -15, y: 4});
-wedge.nitro.push({x: -18, y: 4});
-wedge.nitro.push({x: -22, y: 4});
+function shipsInit(){
+    wedge.d.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
+    wedge.d.push({x: 4, y: 12, r: 19, a1: -Math.acos(-1/Math.sqrt(10)), a2: -Math.acos(14/Math.sqrt(365))});
+    wedge.d.push({x: 4, y: -4, r: 19, a1: Math.acos(14/Math.sqrt(365)), a2: Math.acos(-1/Math.sqrt(10))});
+    wedge.d.push({x: 12, y: 27, r: 19, a1: -Math.acos(-14/Math.sqrt(365)), a2: -Math.acos(1/Math.sqrt(10))});
+    wedge.d.push({x: 20, y: 35, r: 40, a1: -Math.acos(-4/Math.sqrt(65)), a2: -Math.acos(25/Math.sqrt(1586))});
+    wedge.d.push({x: 20, y: -27, r: 40, a1: Math.acos(25/Math.sqrt(1586)), a2: Math.acos(-4/Math.sqrt(65))});
+    wedge.nitro.push({x: -8, y: 4});
+    wedge.nitro.push({x: -12, y: 4});
+    wedge.nitro.push({x: -15, y: 4});
+    wedge.nitro.push({x: -18, y: 4});
+    wedge.nitro.push({x: -22, y: 4});
 
-needle.d.push({x: 0, y: 0});
-needle.d.push({x: 13, y: 0});
-needle.d.push({x: 20, y: 6});
-needle.d.push({x: 41, y: 6});
-needle.d.push({x: 47, y: 9});
-needle.d.push({x: 41, y: 12});
-needle.d.push({x: 20, y: 12});
-needle.d.push({x: 13, y: 18});
-needle.d.push({x: 0, y: 18});
-needle.d.push({x: 0, y: 6});
-needle.d.push({x: 0, y: 12});
-needle.nitro.push({x: -8, y: 9});
-needle.nitro.push({x: -12, y: 9});
-needle.nitro.push({x: -15, y: 9});
-needle.nitro.push({x: -18, y: 9});
-needle.nitro.push({x: -22, y: 9});
+    needle.d.push({x: 0, y: 0});
+    needle.d.push({x: 13, y: 0});
+    needle.d.push({x: 20, y: 6});
+    needle.d.push({x: 41, y: 6});
+    needle.d.push({x: 47, y: 9});
+    needle.d.push({x: 41, y: 12});
+    needle.d.push({x: 20, y: 12});
+    needle.d.push({x: 13, y: 18});
+    needle.d.push({x: 0, y: 18});
+    needle.d.push({x: 0, y: 6});
+    needle.d.push({x: 0, y: 12});
+    needle.nitro.push({x: -8, y: 9});
+    needle.nitro.push({x: -12, y: 9});
+    needle.nitro.push({x: -15, y: 9});
+    needle.nitro.push({x: -18, y: 9});
+    needle.nitro.push({x: -22, y: 9});
+}
 
 shots.push({owner: 2, x: 400, y: 390,
             lifeTime: 1,
@@ -579,6 +581,7 @@ function drawNeedle() {
     }
 }
 
+shipsInit();
 starsGeneration();
 draw();
 keysControl();
