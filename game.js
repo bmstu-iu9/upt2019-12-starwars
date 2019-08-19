@@ -594,7 +594,8 @@ function draw() {
         ctx.translate(wX, wY);
         ctx.rotate(wA);
         ctx.translate( - wedgeOriginDeltaX, - wedgeOriginDeltaY);
-        if (wedgeNitroState > 0 && wedgeNitroState <= 20) wedgeNitroState++;
+        if (wedgeNitroState > 0 && wedgeNitroState <= 24) wedgeNitroState++;
+        if (wedgeNitroState == 25) wedgeNitroState = 16;
         drawWedge();
         ctx.restore();
     }
@@ -604,7 +605,8 @@ function draw() {
         ctx.translate(nX, nY);
         ctx.rotate(nA);
         ctx.translate(- needleWidth/2, - needleHeight/2);
-        if (needleNitroState > 0 && needleNitroState <= 20) needleNitroState++;
+        if (needleNitroState > 0 && needleNitroState <= 24) needleNitroState++;
+        if (needleNitroState == 25) needleNitroState = 16;
         drawNeedle();
         ctx.restore();
     }
