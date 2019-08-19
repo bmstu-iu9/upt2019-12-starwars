@@ -121,6 +121,8 @@ function keysControl() {
                     angle: wA + Math.PI,
                     x: wX + (wedgeWidth/2 * Math.cos(wA)) + (4 * Math.cos(wA)),
                     y: wY + (wedgeWidth/2 * Math.sin(wA)) + (shotWidth * Math.sin(wA)),
+                    speedX: (shotSpeed + (wVx - (wAx * dt)) * Math.cos(wA - Math.acos((wVx - (wAx * dt)) / Math.sqrt((wVx - (wAx * dt)) * (wVx - (wAx * dt)) + (wVy - (wAy * dt)) * (wVy - (wAy * dt)))))) * Math.cos(wA),
+                    speedY: (shotSpeed + (wVy - (wAy * dt)) * Math.cos(wA - Math.acos((wVx - (wAx * dt)) / Math.sqrt((wVx - (wAx * dt)) * (wVx - (wAx * dt)) + (wVy - (wAy * dt)) * (wVy - (wAy * dt)))))) * Math.sin(wA),
                     lifeTime: 0,
                     killer: false,
                     victim: -1,
@@ -167,6 +169,8 @@ function keysControl() {
                     angle: nA + Math.PI,
                     x: nX + (needleWidth/2 * Math.cos(nA)) + (5 * Math.cos(nA)),
                     y: nY + (needleWidth/2 * Math.sin(nA)) + (shotWidth * Math.sin(nA)),
+                    speedX: (shotSpeed + (nVx - (nAx * dt)) * Math.cos(nA - Math.acos((nVx - (nAx * dt)) / Math.sqrt((nVx - (nAx * dt)) * (nVx - (nAx * dt)) + (nVy - (nAy * dt)) * (nVy - (nAy * dt)))))) * Math.cos(nA),
+                    speedY: (shotSpeed + (nVy - (nAy * dt)) * Math.cos(nA - Math.acos((nVx - (nAx * dt)) / Math.sqrt((nVx - (nAx * dt)) * (nVx - (nAx * dt)) + (nVy - (nAy * dt)) * (nVy - (nAy * dt)))))) * Math.sin(nA),
                     lifeTime: 0,
                     killer: false,
                     victim: -1,
@@ -215,8 +219,8 @@ function shotsControl() {
         if (shots[i].owner != 2) shots[i].lifeTime += 10;
         if (shots[i].lifeTime < shotMaximumLifeTime && !shots[i].killer) {
             if (shots[i].owner != 2) {
-                shots[i].x += shotSpeed * Math.cos(shots[i].angle - Math.PI);
-                shots[i].y += shotSpeed * Math.sin(shots[i].angle - Math.PI);
+                shots[i].x += shots[i].speedX;
+                shots[i].y += shots[i].speedY;
             }
             if (wedgeAlive) {
                 let n = wedge.length;
