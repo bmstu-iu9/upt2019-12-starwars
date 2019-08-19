@@ -13,7 +13,7 @@ var centerWidth = 25, centerHeight = 25;
 
 //  sources
 
-var wedge = [], wedgeNitro = [];
+var wedge = [], wedgeNitro = [], wedgeLoopControlPoints = [];
 var needle = [], needleNitro = [];
 
 
@@ -28,6 +28,9 @@ wedgeNitro.push({x: -12, y: 4});
 wedgeNitro.push({x: -15, y: 4});
 wedgeNitro.push({x: -18, y: 4});
 wedgeNitro.push({x: -22, y: 4});
+wedgeLoopControlPoints.push({x: 50, y: 0});
+wedgeLoopControlPoints.push({x: -2, y: -7});
+wedgeLoopControlPoints.push({x: -2, y: -14});
 
 needle.push({x: 0, y: 0});
 needle.push({x: 13, y: 0});
@@ -88,6 +91,7 @@ shots.push({owner: 2,
             e: []});
 var shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 30, shotSpeed = 1, rechargeTime = 500;
 var wedgeAlive = true, needleAlive = true;
+var wedgeDouble = false, wedgeDoubleSide = [], needleDouble = false, needleDoubleSide = [];
 var wedgeFuelLevel = 3000, needleFuelLevel = 3000, wedgeShotsNumber = 33, wedgeLastShotTime = rechargeTime, needleShotsNumber = 33, needleLastShotTime = rechargeTime;
 let nitroPower = 0.02; //МОЩНОСТЬ НИТРО: чем больше, тем сильнее тяга
     //loop helpers
@@ -413,25 +417,124 @@ function gravityStep(){
 
 function isLoop(){ //Зацикливание кораблей, шаг см. в SERVICE
 
-  //wedge
-  if (wX > canvasSize + loopStep) wX = -loopStep;
-  if (wX < -loopStep) wX = canvasSize + loopStep;
-  if (wY > canvasSize + loopStep) wY = -loopStep;
-  if (wY < -loopStep) wY = canvasSize + loopStep;
+    //wedge
+    wedgeDoubleSide.length = 0;
+    for (let wlcp of wedgeLoopControlPoints) {
+        if (((wlcp.x - wedgeOriginDeltaX) * Math.cos(wA) - (wlcp.y - wedgeOriginDeltaY) * Math.sin(wA) + wX) > canvasSize) {
+            wedgeDouble = true;
+            if (wedgeDoubleSide.indexOf(0) == -1) wedgeDoubleSide.push(0);
+        }
+        if (((wlcp.x - wedgeOriginDeltaX) * Math.cos(wA) - (wlcp.y - wedgeOriginDeltaY) * Math.sin(wA) + wX) < 0) {
+            wedgeDouble = true;
+            if (wedgeDoubleSide.indexOf(1) == -1) wedgeDoubleSide.push(1);
+        }
+        if (((wlcp.x - wedgeOriginDeltaX) * Math.sin(wA) + (wlcp.y - wedgeOriginDeltaY) * Math.cos(wA) + wY) > canvasSize) {
+            wedgeDouble = true;
+            if (wedgeDoubleSide.indexOf(2) == -1) wedgeDoubleSide.push(2);
+        }
+        if (((wlcp.x - wedgeOriginDeltaX) * Math.sin(wA) + (wlcp.y - wedgeOriginDeltaY) * Math.cos(wA) + wY) < 0) {
+            wedgeDouble = true;
+            if (wedgeDoubleSide.indexOf(3) == -1) wedgeDoubleSide.push(3);
+        }
+    }
+    if (wedgeNitroState > 0) {
+        if (((wedgeNitro[Math.floor(wedgeNitroState/5)].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedgeNitro[Math.floor(wedgeNitroState/5)].y - wedgeOriginDeltaY) * Math.sin(wA) + wX) > canvasSize) {
+            wedgeDouble = true;
+            if (wedgeDoubleSide.indexOf(0) == -1) wedgeDoubleSide.push(0);
+        }
+        if (((wedgeNitro[Math.floor(wedgeNitroState/5)].x - wedgeOriginDeltaX) * Math.cos(wA) - (wedgeNitro[Math.floor(wedgeNitroState/5)].y - wedgeOriginDeltaY) * Math.sin(wA) + wX) < 0) {
+            wedgeDouble = true;
+            if (wedgeDoubleSide.indexOf(1) == -1) wedgeDoubleSide.push(1);
+        }
+        if (((wedgeNitro[Math.floor(wedgeNitroState/5)].x - wedgeOriginDeltaX) * Math.sin(wA) + (wedgeNitro[Math.floor(wedgeNitroState/5)].y - wedgeOriginDeltaY) * Math.cos(wA) + wY) > canvasSize) {
+            wedgeDouble = true;
+            if (wedgeDoubleSide.indexOf(2) == -1) wedgeDoubleSide.push(2);
+        }
+        if (((wedgeNitro[Math.floor(wedgeNitroState/5)].x - wedgeOriginDeltaX) * Math.sin(wA) + (wedgeNitro[Math.floor(wedgeNitroState/5)].y - wedgeOriginDeltaY) * Math.cos(wA) + wY) < 0) {
+            wedgeDouble = true;
+            if (wedgeDoubleSide.indexOf(3) == -1) wedgeDoubleSide.push(3);
+        }
+    }
+    if (wX > canvasSize) {
+        wX -= canvasSize;
+        wedgeDoubleSide[wedgeDoubleSide.indexOf(0)] = 1;
+    }
+    if (wX < 0) {
+        wX += canvasSize;
+        wedgeDoubleSide[wedgeDoubleSide.indexOf(1)] = 0;
+    }
+    if (wY > canvasSize) {
+        wY -= canvasSize;
+        wedgeDoubleSide[wedgeDoubleSide.indexOf(2)] = 3;
+    }
+    if (wY < 0) {
+        wY += canvasSize;
+        wedgeDoubleSide[wedgeDoubleSide.indexOf(3)] = 2;
+    }
 
-  //needle
-  if (nX > canvasSize + loopStep) nX = -loopStep;
-  if (nX < -loopStep) nX = canvasSize + loopStep;
-  if (nY > canvasSize + loopStep) nY = -loopStep;
-  if (nY < -loopStep) nY = canvasSize + loopStep;
+    //needle
+    let n = needle.length;
+    needleDoubleSide.length = 0;
+    for (let i = 0; i < n; i += 4) {
+        if (((needle[i].x - needleWidth/2) * Math.cos(nA) - (needle[i].y - needleHeight/2) * Math.sin(nA) + nX) > canvasSize) {
+            needleDouble = true;
+            if (needleDoubleSide.indexOf(0) == -1) needleDoubleSide.push(0);
+        }
+        if (((needle[i].x - needleWidth/2) * Math.cos(nA) - (needle[i].y - needleHeight/2) * Math.sin(nA) + nX) < 0) {
+            needleDouble = true;
+            if (needleDoubleSide.indexOf(1) == -1) needleDoubleSide.push(1);
+        }
+        if (((needle[i].x - needleWidth/2) * Math.sin(nA) + (needle[i].y - needleHeight/2) * Math.cos(nA) + nY) > canvasSize) {
+            needleDouble = true;
+            if (needleDoubleSide.indexOf(2) == -1) needleDoubleSide.push(2);
+        }
+        if (((needle[i].x - needleWidth/2) * Math.sin(nA) + (needle[i].y - needleHeight/2) * Math.cos(nA) + nY) < 0) {
+            needleDouble = true;
+            if (needleDoubleSide.indexOf(3) == -1) needleDoubleSide.push(3);
+        }
+    }
+    if (needleNitroState > 0) {
+        if (((needleNitro[Math.floor(needleNitroState/5)].x - needleWidth/2) * Math.cos(nA) - (needleNitro[Math.floor(needleNitroState/5)].y - needleHeight/2) * Math.sin(nA) + nX) > canvasSize) {
+            needleDouble = true;
+            if (needleDoubleSide.indexOf(0) == -1) needleDoubleSide.push(0);
+        }
+        if (((needleNitro[Math.floor(needleNitroState/5)].x - needleWidth/2) * Math.cos(nA) - (needleNitro[Math.floor(needleNitroState/5)].y - needleHeight/2) * Math.sin(nA) + nX) < 0) {
+            needleDouble = true;
+            if (needleDoubleSide.indexOf(1) == -1) needleDoubleSide.push(1);
+        }
+        if (((needleNitro[Math.floor(needleNitroState/5)].x - needleWidth/2) * Math.sin(nA) + (needleNitro[Math.floor(needleNitroState/5)].y - needleHeight/2) * Math.cos(nA) + nY) > canvasSize) {
+            needleDouble = true;
+            if (needleDoubleSide.indexOf(2) == -1) needleDoubleSide.push(2);
+        }
+        if (((needleNitro[Math.floor(needleNitroState/5)].x - needleWidth/2) * Math.sin(nA) + (needleNitro[Math.floor(needleNitroState/5)].y - needleHeight/2) * Math.cos(nA) + nY) < 0) {
+            needleDouble = true;
+            if (needleDoubleSide.indexOf(3) == -1) needleDoubleSide.push(3);
+        }
+    }
+    if (nX > canvasSize) {
+        nX -= canvasSize;
+        needleDoubleSide[needleDoubleSide.indexOf(0)] = 1;
+    }
+    if (nX < 0) {
+        nX += canvasSize;
+        needleDoubleSide[needleDoubleSide.indexOf(1)] = 0;
+    }
+    if (nY > canvasSize) {
+        nY -= canvasSize;
+        needleDoubleSide[needleDoubleSide.indexOf(2)] = 3;
+    }
+    if (nY < 0) {
+        nY += canvasSize;
+        needleDoubleSide[needleDoubleSide.indexOf(3)] = 2;
+    }
 
-  //shots
-  for (let s of shots) {
-      if (s.x >= canvasSize + 6) s.x = 0;
-      if (s.x <= -6) s.x = canvasSize;
-      if (s.y >= canvasSize + 6) s.y = 0;
-      if (s.y <= -6) s.y = canvasSize;
-  }
+    //shots
+    for (let s of shots) {
+        if (s.x >= canvasSize + 6) s.x = 0;
+        if (s.x <= -6) s.x = canvasSize;
+        if (s.y >= canvasSize + 6) s.y = 0;
+        if (s.y <= -6) s.y = canvasSize;
+    }
 }
 
 
@@ -634,6 +737,20 @@ function draw() {
         if (wedgeNitroState == 25) wedgeNitroState = 16;
         drawWedge();
         ctx.restore();
+        if (wedgeDouble) {
+            for (let ds of wedgeDoubleSide) {
+                ctx.save();
+                if (ds == 0) ctx.translate(wX - canvasSize, wY);
+                if (ds == 1) ctx.translate(wX + canvasSize, wY);
+                if (ds == 2) ctx.translate(wX, wY - canvasSize);
+                if (ds == 3) ctx.translate(wX, wY + canvasSize);
+                ctx.rotate(wA);
+                ctx.translate(-wedgeOriginDeltaX, -wedgeOriginDeltaY);
+                drawWedge();
+                ctx.restore();
+            }
+            wedgeDouble = false;
+        }
     }
         //needle
     if (needleAlive) {
@@ -645,6 +762,20 @@ function draw() {
         if (needleNitroState == 25) needleNitroState = 16;
         drawNeedle();
         ctx.restore();
+        if (needleDouble) {
+            for (let ds of needleDoubleSide) {
+                ctx.save();
+                if (ds == 0) ctx.translate(nX - canvasSize, nY);
+                if (ds == 1) ctx.translate(nX + canvasSize, nY);
+                if (ds == 2) ctx.translate(nX, nY - canvasSize);
+                if (ds == 3) ctx.translate(nX, nY + canvasSize);
+                ctx.rotate(nA);
+                ctx.translate(- needleWidth/2, - needleHeight/2);
+                drawNeedle();
+                ctx.restore();
+            }
+            needleDouble = false;
+        }
     }
 
     //center's rotation
@@ -672,7 +803,6 @@ function draw() {
     //gravity effect
     gravityStep();
     isLoop();
-    ctx.closePath();
     requestAnimationFrame(draw);
 
 }
