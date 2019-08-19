@@ -1,14 +1,13 @@
 var cvs = document.getElementById("canvas");
 var ctx = cvs.getContext("2d");
-var canvasSize = 800;
 
+let canvasSize = 800;
 let shotWidth = 6, shotHeight = 1;
 let rotationAngle = Math.PI/50;
 let centerState = 0;
 let keys = [], shots = [];
 let shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 30, shotSpeed = 1, rechargeTime = 500;
 let nitroPower = 0.02;
-let loopStep = 30;
 let deltaTime = 1, M = 140, m = 8;
 let k = canvasSize/2;
 let stars1 = [], stars2 = [], stars3 = [], stars4 = [];
@@ -16,20 +15,22 @@ let stepX = 0.1, stepY = 0.001;
 let color1 = 230, color2 = 50, colorStep1 = -1, colorStep2 = 1;
 
 let wedge = {width: 47, height: 23,
-             originDeltaX: 20, originDeltaY: 4,
+             originDeltaX: 20, originDeltaY: 4, loopControlPoints: [],
              angle: Math.PI/2, x: 200, y: 210,
              d: [], nitro: [], nitroState: 0,
+             double: false, doubleSide: [],
              alive: true, fuelLevel: 3000, shotsNumber: 33, lastShotPause: rechargeTime,
              weight: m + 10, Fx: 0, Fy: 0, R: 0, ax: 0, ay: 0,
              speedX: 0, speedY: 0},
     needle = {width: 47, height: 18,
               angle: 3 * Math.PI/2, x: 600, y: 590,
               d: [], nitro: [], nitroState: 0,
+              double: false, doubleSide: [],
               alive: true, fuelLevel: 3000, shotsNumber: 33, lastShotPause: rechargeTime,
               weight: m + 10, Fx: 0, Fy: 0, R: 0, ax: 0, ay: 0,
               speedX: 0, speedY: 0};
 
-function shipsInit(){
+function shipsInit() {
     wedge.d.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
     wedge.d.push({x: 4, y: 12, r: 19, a1: -Math.acos(-1/Math.sqrt(10)), a2: -Math.acos(14/Math.sqrt(365))});
     wedge.d.push({x: 4, y: -4, r: 19, a1: Math.acos(14/Math.sqrt(365)), a2: Math.acos(-1/Math.sqrt(10))});
@@ -41,7 +42,9 @@ function shipsInit(){
     wedge.nitro.push({x: -15, y: 4});
     wedge.nitro.push({x: -18, y: 4});
     wedge.nitro.push({x: -22, y: 4});
-
+    wedge.loopControlPoints.push({x: 50, y: 0});
+    wedge.loopControlPoints.push({x: -2, y: -7});
+    wedge.loopControlPoints.push({x: -2, y: -14});
     needle.d.push({x: 0, y: 0});
     needle.d.push({x: 13, y: 0});
     needle.d.push({x: 20, y: 6});
@@ -95,9 +98,13 @@ function keysControl() {
         while (wedge.angle > 2 * Math.PI) wedge.angle -= 2 * Math.PI;
     }
     if (keys[87] && wedge.shotsNumber > 0 && wedge.lastShotPause >= rechargeTime && wedge.alive) {
+        let sx = wedge.speedX - (wedge.ax * deltaTime);
+        let sy = wedge.speedY - (wedge.ay * deltaTime);
         shots.push({owner: 0, angle: wedge.angle + Math.PI,
                     x: wedge.x + (wedge.width/2 * Math.cos(wedge.angle)) + (4 * Math.cos(wedge.angle)),
                     y: wedge.y + (wedge.width/2 * Math.sin(wedge.angle)) + (shotWidth * Math.sin(wedge.angle)),
+                    speedX: (shotSpeed + sx * Math.cos(wedge.angle - Math.acos(sx / Math.sqrt(sx * sx + sy * sy)))) * Math.cos(wedge.angle),
+                    speedY: (shotSpeed + sy * Math.cos(wedge.angle - Math.acos(sx / Math.sqrt(sx * sx + sy * sy)))) * Math.sin(wedge.angle),
                     lifeTime: 0,
                     killer: false, victim: -1,
                     exploded: false, explosionPause: 0, e: []});
@@ -130,9 +137,13 @@ function keysControl() {
         while (needle.angle > 2 * Math.PI) needle.angle -= 2 * Math.PI;
     }
     if (keys[73] && needle.shotsNumber > 0 && needle.lastShotPause >= rechargeTime && needle.alive) {
+        let sx = needle.speedX - (needle.ax * deltaTime);
+        let sy = needle.speedY - (needle.ay * deltaTime);
         shots.push({owner: 1, angle: needle.angle + Math.PI,
                     x: needle.x + (needle.width/2 * Math.cos(needle.angle)) + (5 * Math.cos(needle.angle)),
                     y: needle.y + (needle.width/2 * Math.sin(needle.angle)) + (shotWidth * Math.sin(needle.angle)),
+                    speedX: (shotSpeed + sx * Math.cos(needle.angle - Math.acos(sx / Math.sqrt(sx * sx + sy * sy)))) * Math.cos(needle.angle),
+                    speedY: (shotSpeed + sy * Math.cos(needle.angle - Math.acos(sx / Math.sqrt(sx * sx + sy * sy)))) * Math.sin(needle.angle),
                     lifeTime: 0,
                     killer: false, victim: -1,
                     exploded: false, explosionPause: 0, e: []});
@@ -167,44 +178,37 @@ function shotsControl() {
         if (shots[i].owner != 2) shots[i].lifeTime += 10;
         if (shots[i].lifeTime < shotMaximumLifeTime && !shots[i].killer) {
             if (shots[i].owner != 2) {
-                shots[i].x += shotSpeed * Math.cos(shots[i].angle - Math.PI);
-                shots[i].y += shotSpeed * Math.sin(shots[i].angle - Math.PI);
+                shots[i].x += shots[i].speedX;
+                shots[i].y += shots[i].speedY;
             }
             if (wedge.alive) {
                 let n = wedge.d.length;
-                for (let o = 0; o < n; o += 2)
-                    if ((shots[i].x - ((wedge.d[o].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x)) *
-                        (shots[i].x - ((wedge.d[o].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x)) +
-                        (shots[i].y - ((wedge.d[o].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y)) *
-                        (shots[i].y - ((wedge.d[o].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y)) <=
-                        wedge.d[o].r * wedge.d[o].r &&
-                        (shots[i].x - ((wedge.d[o+1].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o+1].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x)) *
-                        (shots[i].x - ((wedge.d[o+1].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o+1].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x)) +
-                        (shots[i].y - ((wedge.d[o+1].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o+1].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y)) *
-                        (shots[i].y - ((wedge.d[o+1].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o+1].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y)) <=
-                        wedge.d[o+1].r * wedge.d[o+1].r /*&&
-                        (o != 4 || shots[i].x > wedge.x - wedge.originDeltaX)*/) {
+                for (let o = 0; o < n; o += 2) {
+                    let wrx1 = (wedge.d[o].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
+                    let wry1 = (wedge.d[o].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y;
+                    let wrx2 = (wedge.d[o+1].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o+1].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
+                    let wry2 = (wedge.d[o+1].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o+1].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y;
+                    if ((shots[i].x - wrx1) * (shots[i].x - wrx1) + (shots[i].y - wrx1) * (shots[i].y - wrx1) <= wedge.d[o].r * wedge.d[o].r &&
+                        (shots[i].x - wrx2) * (shots[i].x - wrx2) + (shots[i].y - wrx2) * (shots[i].y - wrx2) <= wedge.d[o+1].r * wedge.d[o+1].r) {
                         shots[i].killer = true;
                         shots[i].victim = 0;
                         wedge.alive = false;
+                        break;
                     }
+                }
             }
             if (needle.alive) {
                 let n = needle.d.length - 2, c = false, j = n - 1;
                 for (let o = 0; o < n; o++) {
-                    if ((((((needle.d[o].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[o].y - needle.height/2) * Math.cos(needle.angle) + needle.y) <= shots[i].y) &&
-                        (shots[i].y < ((needle.d[j].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[j].y - needle.height/2) * Math.cos(needle.angle) + needle.y))) ||
-                        ((((needle.d[j].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[j].y - needle.height/2) * Math.cos(needle.angle) + needle.y) <= shots[i].y) &&
-                        (shots[i].y < ((needle.d[o].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[o].y - needle.height/2) * Math.cos(needle.angle) + needle.y)))) &&
-                        (shots[i].x > (((needle.d[j].x - needle.width/2) * Math.cos(needle.angle) - (needle.d[j].y - needle.height/2) * Math.sin(needle.angle) + needle.x) -
-                        ((needle.d[o].x - needle.width/2) * Math.cos(needle.angle) - (needle.d[o].y - needle.height/2) * Math.sin(needle.angle) + needle.x)) *
-                        (shots[i].y - ((needle.d[o].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[o].y - needle.height/2) * Math.cos(needle.angle) + needle.y)) /
-                        (((needle.d[j].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[j].y - needle.height/2) * Math.cos(needle.angle) + needle.y) -
-                        ((needle.d[o].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[o].y - needle.height/2) * Math.cos(needle.angle) + needle.y)) +
-                        ((needle.d[o].x - needle.width/2) * Math.cos(needle.angle) - (needle.d[o].y - needle.height/2) * Math.sin(needle.angle) + needle.x)))
+                    let nrxo = (needle.d[o].x - needle.width/2) * Math.cos(needle.angle) - (needle.d[o].y - needle.height/2) * Math.sin(needle.angle) + needle.x;
+                    let nryo = (needle.d[o].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[o].y - needle.height/2) * Math.cos(needle.angle) + needle.y;
+                    let nrxj = (needle.d[j].x - needle.width/2) * Math.cos(needle.angle) - (needle.d[j].y - needle.height/2) * Math.sin(needle.angle) + needle.x;
+                    let nryj = (needle.d[j].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[j].y - needle.height/2) * Math.cos(needle.angle) + needle.y;
+                    if ((((nryo <= shots[i].y) && (shots[i].y < nryj)) || ((nryj <= shots[i].y) && (shots[i].y < nryo))) &&
+                        (shots[i].x > (nrxj - nrxo) * (shots[i].y - nryo) / (nryj - nryo) + nrxo))
                         c = !c;
-                        j = o;
-                    }
+                    j = o;
+                }
                 if (c) {
                     shots[i].killer = true;
                     shots[i].victim = 1;
@@ -215,6 +219,28 @@ function shotsControl() {
             shots.splice(i, 1);
             i--;
             l--;
+        }
+    }
+    if (wedge.alive && needle.alive) {
+        l = needle.d.length;
+        let n = wedge.d.length;
+        for (let i = 0; i < l; i++) {
+            let nrx = (needle.d[i].x - needle.width/2) * Math.cos(needle.angle) - (needle.d[i].y - needle.height/2) * Math.sin(needle.angle) + needle.x;
+            let nry = (needle.d[i].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[i].y - needle.height/2) * Math.cos(needle.angle) + needle.y;
+            for (let o = 0; o < n; o += 2) {
+                let wrx1 = (wedge.d[o].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
+                let wry1 = (wedge.d[o].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y;
+                let wrx2 = (wedge.d[o+1].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o+1].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
+                let wry2 = (wedge.d[o+1].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o+1].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y;
+                if ((nrx - wrx1) * (nrx - wrx1) + (nry - wry1) * (nry - wry1) <= wedge.d[o].r * wedge.d[o].r &&
+                    (nrx - wrx2) * (nrx - wrx2) + (nry - wry2) * (nry - wry2) <= wedge.d[o+1].r * wedge.d[o+1].r) {
+                    wedge.alive = false;
+                    needle.alive = false;
+                    shots.push({x: nrx, y: nry,
+                                killer: true, victim: 2,
+                                exploded: false, explosionPause: 0, e: []});
+                }
+            }
         }
     }
     setTimeout(shotsControl, 10);
@@ -290,20 +316,129 @@ function gravityStep() {
 }
 
 function isLoop() {
-  if (wedge.x > canvasSize + loopStep) wedge.x = -loopStep;
-  if (wedge.x < -loopStep) wedge.x = canvasSize + loopStep;
-  if (wedge.y > canvasSize + loopStep) wedge.y = -loopStep;
-  if (wedge.y < -loopStep) wedge.y = canvasSize + loopStep;
-  if (needle.x > canvasSize + loopStep) needle.x = -loopStep;
-  if (needle.x < -loopStep) needle.x = canvasSize + loopStep;
-  if (needle.y > canvasSize + loopStep) needle.y = -loopStep;
-  if (needle.y < -loopStep) needle.y = canvasSize + loopStep;
-  for (let s of shots) {
-      if (s.x >= canvasSize + shotWidth) s.x = 0;
-      if (s.x <= -shotWidth) s.x = canvasSize;
-      if (s.y >= canvasSize + shotWidth) s.y = 0;
-      if (s.y <= -shotWidth) s.y = canvasSize;
-  }
+    wedge.doubleSide.length = 0;
+    for (let wlcp of wedge.loopControlPoints) {
+        let wlcpx = (wlcp.x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wlcp.y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
+        let wlcpy = (wlcp.x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wlcp.y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y;
+        if (wlcpx > canvasSize) {
+            wedge.double = true;
+            if (wedge.doubleSide.indexOf(0) == -1) wedge.doubleSide.push(0);
+        }
+        if (wlcpx < 0) {
+            wedge.double = true;
+            if (wedge.doubleSide.indexOf(1) == -1) wedge.doubleSide.push(1);
+        }
+        if (wlcpy > canvasSize) {
+            wedge.double = true;
+            if (wedge.doubleSide.indexOf(2) == -1) wedge.doubleSide.push(2);
+        }
+        if (wlcpy < 0) {
+            wedge.double = true;
+            if (wedge.doubleSide.indexOf(3) == -1) wedge.doubleSide.push(3);
+        }
+    }
+    if (wedge.nitroState > 0) {
+        let i = Math.floor(wedge.nitroState/5);
+        let wnrx = (wedge.nitro[i].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.nitro[i].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
+        let wnry = (wedge.nitro[i].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.nitro[i].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y;
+        if (wnrx > canvasSize) {
+            wedge.double = true;
+            if (wedge.doubleSide.indexOf(0) == -1) wedge.doubleSide.push(0);
+        }
+        if (wnrx < 0) {
+            wedge.double = true;
+            if (wedge.doubleSide.indexOf(1) == -1) wedge.doubleSide.push(1);
+        }
+        if (wnry > canvasSize) {
+            wedge.double = true;
+            if (wedge.doubleSide.indexOf(2) == -1) wedge.doubleSide.push(2);
+        }
+        if (wnry < 0) {
+            wedge.double = true;
+            if (wedge.doubleSide.indexOf(3) == -1) wedge.doubleSide.push(3);
+        }
+    }
+    if (wedge.x > canvasSize) {
+        wedge.x -= canvasSize;
+        wedge.doubleSide[wedge.doubleSide.indexOf(0)] = 1;
+    }
+    if (wedge.x < 0) {
+        wedge.x += canvasSize;
+        wedge.doubleSide[wedge.doubleSide.indexOf(1)] = 0;
+    }
+    if (wedge.y > canvasSize) {
+        wedge.y -= canvasSize;
+        wedge.doubleSide[wedge.doubleSide.indexOf(2)] = 3;
+    }
+    if (wedge.y < 0) {
+        wedge.y += canvasSize;
+        wedge.doubleSide[wedge.doubleSide.indexOf(3)] = 2;
+    }
+    let n = needle.d.length;
+    needle.doubleSide.length = 0;
+    for (let i = 0; i < n; i += 4) {
+        let nrx = (needle.d[i].x - needle.width/2) * Math.cos(needle.angle) - (needle.d[i].y - needle.height/2) * Math.sin(needle.angle) + needle.x;
+        let nry = (needle.d[i].x - needle.width/2) * Math.sin(needle.angle) + (needle.d[i].y - needle.height/2) * Math.cos(needle.angle) + needle.y;
+        if (nrx > canvasSize) {
+            needle.double = true;
+            if (needle.doubleSide.indexOf(0) == -1) needle.doubleSide.push(0);
+        }
+        if (nrx < 0) {
+            needle.double = true;
+            if (needle.doubleSide.indexOf(1) == -1) needle.doubleSide.push(1);
+        }
+        if (nry > canvasSize) {
+            needle.double = true;
+            if (needle.doubleSide.indexOf(2) == -1) needle.doubleSide.push(2);
+        }
+        if (nry < 0) {
+            needle.double = true;
+            if (needle.doubleSide.indexOf(3) == -1) needle.doubleSide.push(3);
+        }
+    }
+    if (needle.nitroState > 0) {
+        let i = Math.floor(needle.nitroState/5);
+        let nnrx = (needle.nitro[i].x - needle.width/2) * Math.cos(needle.angle) - (needle.nitro[i].y - needle.height/2) * Math.sin(needle.angle) + needle.x;
+        let nnry = (needle.nitro[i].x - needle.width/2) * Math.sin(needle.angle) + (needle.nitro[i].y - needle.height/2) * Math.cos(needle.angle) + needle.y;
+        if (nnrx > canvasSize) {
+            needle.double = true;
+            if (needle.doubleSide.indexOf(0) == -1) needle.doubleSide.push(0);
+        }
+        if (nnrx < 0) {
+            needle.double = true;
+            if (needle.doubleSide.indexOf(1) == -1) needle.doubleSide.push(1);
+        }
+        if (nnry > canvasSize) {
+            needle.double = true;
+            if (needle.doubleSide.indexOf(2) == -1) needle.doubleSide.push(2);
+        }
+        if (nnry < 0) {
+            needle.double = true;
+            if (needle.doubleSide.indexOf(3) == -1) needle.doubleSide.push(3);
+        }
+    }
+    if (needle.x > canvasSize) {
+        needle.x -= canvasSize;
+        needle.doubleSide[needle.doubleSide.indexOf(0)] = 1;
+    }
+    if (needle.x < 0) {
+        needle.x += canvasSize;
+        needle.doubleSide[needle.doubleSide.indexOf(1)] = 0;
+    }
+    if (needle.y > canvasSize) {
+        needle.y -= canvasSize;
+        needle.doubleSide[needle.doubleSide.indexOf(2)] = 3;
+    }
+    if (needle.y < 0) {
+        needle.y += canvasSize;
+        needle.doubleSide[needle.doubleSide.indexOf(3)] = 2;
+    }
+    for (let s of shots) {
+        if (s.x >= canvasSize + shotWidth) s.x = 0;
+        if (s.x <= -shotWidth) s.x = canvasSize;
+        if (s.y >= canvasSize + shotWidth) s.y = 0;
+        if (s.y <= -shotWidth) s.y = canvasSize;
+    }
 }
 
 function starsGeneration() {
@@ -325,18 +460,48 @@ function draw() {
         ctx.translate(wedge.x, wedge.y);
         ctx.rotate(wedge.angle);
         ctx.translate(-wedge.originDeltaX, -wedge.originDeltaY);
-        if (wedge.nitroState > 0 && wedge.nitroState <= 20) wedge.nitroState++;
+        if (wedge.nitroState > 0 && wedge.nitroState <= 24) wedge.nitroState++;
+        if (wedge.nitroState == 25) wedge.nitroState = 16;
         drawWedge();
         ctx.restore();
+        if (wedge.double) {
+            for (let ds of wedge.doubleSide) {
+                ctx.save();
+                if (ds == 0) ctx.translate(wedge.x - canvasSize, wedge.y);
+                if (ds == 1) ctx.translate(wedge.x + canvasSize, wedge.y);
+                if (ds == 2) ctx.translate(wedge.x, wedge.y - canvasSize);
+                if (ds == 3) ctx.translate(wedge.x, wedge.y + canvasSize);
+                ctx.rotate(wedge.angle);
+                ctx.translate(-wedge.originDeltaX, -wedge.originDeltaY);
+                drawWedge();
+                ctx.restore();
+            }
+            wedge.double = false;
+        }
     }
     if (needle.alive) {
         ctx.save();
         ctx.translate(needle.x, needle.y);
         ctx.rotate(needle.angle);
         ctx.translate(-needle.width/2, -needle.height/2);
-        if (needle.nitroState > 0 && needle.nitroState <= 20) needle.nitroState++;
+        if (needle.nitroState > 0 && needle.nitroState <= 24) needle.nitroState++;
+        if (needle.nitroState == 25) needle.nitroState = 16;
         drawNeedle();
         ctx.restore();
+        if (needle.double) {
+            for (let ds of needle.doubleSide) {
+                ctx.save();
+                if (ds == 0) ctx.translate(needle.x - canvasSize, needle.y);
+                if (ds == 1) ctx.translate(needle.x + canvasSize, needle.y);
+                if (ds == 2) ctx.translate(needle.x, needle.y - canvasSize);
+                if (ds == 3) ctx.translate(needle.x, needle.y + canvasSize);
+                ctx.rotate(needle.angle);
+                ctx.translate(- needle.width/2, - needle.height/2);
+                drawNeedle();
+                ctx.restore();
+            }
+            needle.double = false;
+        }
     }
     if (centerState < 20 || centerState == 40) {
         ctx.save();
@@ -379,7 +544,7 @@ function expensivePlanetarium() {
         ctx.stroke();
     });
     ctx.strokeStyle = "rgb(" + color2 + "," + color2 + "," + color2 + ")";
-    ctx.fillStyle = ctx.strokeStyle ;
+    ctx.fillStyle = ctx.strokeStyle;
     stars2.forEach(function(elem) {
         ctx.beginPath();
         ctx.arc(elem.x, elem.y, 0.6, 0, 2*Math.PI, false);
@@ -391,7 +556,7 @@ function expensivePlanetarium() {
         ctx.stroke();
     });
     ctx.strokeStyle = "rgb(" + color1 + "," + color1 + "," + color1 + ")";
-    ctx.fillStyle = ctx.strokeStyle ;
+    ctx.fillStyle = ctx.strokeStyle;
     stars3.forEach(function(elem) {
         ctx.beginPath();
         ctx.arc(elem.x, elem.y, 0.3, 0, 2*Math.PI, false);
@@ -403,7 +568,7 @@ function expensivePlanetarium() {
         ctx.stroke();
     });
     ctx.strokeStyle = "rgb(" + color2 + "," + color2 + "," + color2 + ")";
-    ctx.fillStyle = ctx.strokeStyle ;
+    ctx.fillStyle = ctx.strokeStyle;
     stars4.forEach(function(elem) {
         ctx.beginPath();
         ctx.arc(elem.x, elem.y, 0.2, 0, 2*Math.PI, false);
@@ -428,6 +593,7 @@ function drawShots() {
                 let n = 100;
                 if (s.victim == 0) n = 50 + (50 * wedge.fuelLevel / 3000);
                 else if (s.victim == 1) n = 50 + (50 * needle.fuelLevel / 3000);
+                else if (s.victim == 2) n = 50 + (50 * wedge.fuelLevel / 3000) + (50 * needle.fuelLevel / 3000);
                 for (let i = 0; i < n; i++) {
                     let x = 0, y = 0;
                     while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
@@ -448,6 +614,7 @@ function drawShots() {
                     let n = 75;
                     if (s.victim == 0) n = 38 + (37 * wedge.fuelLevel / 3000);
                     else if (s.victim == 1) n = 38 + (37 * needle.fuelLevel / 3000);
+                    else if (s.victim == 2) n = 38 + (37 * wedge.fuelLevel / 3000) + (37 * needle.fuelLevel / 3000);
                     for (let i = 0; i < n; i++) {
                         let x = 0, y = 0;
                         while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
@@ -469,6 +636,7 @@ function drawShots() {
                     let n = 50;
                     if (s.victim == 0) n = 25 + (25 * wedge.fuelLevel / 3000);
                     else if (s.victim == 1) n = 25 + (25 * needle.fuelLevel / 3000);
+                    else if (s.victim == 2) n = 25 + (25 * wedge.fuelLevel / 3000) + (25 * needle.fuelLevel / 3000);
                     for (let i = 0; i < n; i++) {
                         let x = 0, y = 0;
                         while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
@@ -510,22 +678,6 @@ function drawShots() {
             s.explosionPause += 3;
         }
     }
-}
-
-function drawSun(l, r) {
-    ctx.fillStyle = "white";
-    ctx.strokeStyle = "white";
-    ctx.beginPath();
-    ctx.moveTo(canvasSize/2 - r, canvasSize/2);
-    ctx.lineTo(canvasSize/2, canvasSize/2 - l);
-    ctx.lineTo(canvasSize/2 + r, canvasSize/2);
-    ctx.lineTo(canvasSize/2 + r + l, canvasSize/2 + r);
-    ctx.lineTo(canvasSize/2 + r, canvasSize/2 + 2*r) ;
-    ctx.lineTo(canvasSize/2, canvasSize/2 + 2 * r + l);
-    ctx.lineTo(canvasSize/2 - r, canvasSize/2 + 2 * r);
-    ctx.lineTo(canvasSize/2 - r - l, canvasSize/2 + r);
-    ctx.closePath();
-    ctx.fill();
 }
 
 function drawWedge() {
@@ -579,6 +731,21 @@ function drawNeedle() {
         ctx.fillStyle = "white";
         ctx.fill();
     }
+}
+
+function drawSun(l, r) {
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.moveTo(canvasSize/2 - r, canvasSize/2);
+    ctx.lineTo(canvasSize/2, canvasSize/2 - l);
+    ctx.lineTo(canvasSize/2 + r, canvasSize/2);
+    ctx.lineTo(canvasSize/2 + r + l, canvasSize/2 + r);
+    ctx.lineTo(canvasSize/2 + r, canvasSize/2 + 2*r) ;
+    ctx.lineTo(canvasSize/2, canvasSize/2 + 2 * r + l);
+    ctx.lineTo(canvasSize/2 - r, canvasSize/2 + 2 * r);
+    ctx.lineTo(canvasSize/2 - r - l, canvasSize/2 + r);
+    ctx.closePath();
+    ctx.fill();
 }
 
 shipsInit();
