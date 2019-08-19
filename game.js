@@ -189,8 +189,8 @@ function shotsControl() {
                     let wry1 = (wedge.d[o].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y;
                     let wrx2 = (wedge.d[o+1].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o+1].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
                     let wry2 = (wedge.d[o+1].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o+1].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y;
-                    if ((shots[i].x - wrx1) * (shots[i].x - wrx1) + (shots[i].y - wrx1) * (shots[i].y - wrx1) <= wedge.d[o].r * wedge.d[o].r &&
-                        (shots[i].x - wrx2) * (shots[i].x - wrx2) + (shots[i].y - wrx2) * (shots[i].y - wrx2) <= wedge.d[o+1].r * wedge.d[o+1].r) {
+                    if ((shots[i].x - wrx1) * (shots[i].x - wrx1) + (shots[i].y - wry1) * (shots[i].y - wry1) <= wedge.d[o].r * wedge.d[o].r &&
+                        (shots[i].x - wrx2) * (shots[i].x - wrx2) + (shots[i].y - wry2) * (shots[i].y - wry2) <= wedge.d[o+1].r * wedge.d[o+1].r) {
                         shots[i].killer = true;
                         shots[i].victim = 0;
                         wedge.alive = false;
