@@ -2,24 +2,31 @@ var cvs = document.getElementById("canvas");
 var ctx = cvs.getContext("2d");
 
 let canvasSize = 800;
-let shotWidth = 6, shotHeight = 1;
-let rotationAngle = Math.PI/50; //угол поворота кораблей при вращении по и против часовой стрелки
-let centerState = 0;
-let keys = [], shots = [];
-let shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 30, shotSpeed = 1, rechargeTime = 500;
+let shotWidth = 6, shotHeight = 1; //размеры текстуры летящей торпеды
+let rotationAngle = Math.PI/50; //угол поворота кораблей при вращении
+let centerState = 0; //переменная-индикатор мерцания звезды в центре
+let keys = [], shots = []; //массивы для отслеживания клавиш и торпед
+let shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 30; // ↵
+//основыные переменные жизненного цикла выпущенной торпеды: период полёта и период взрыва
+let shotSpeed = 1, rechargeTime = 500; //базовая скорость торпеды и минимальный промежуток времени до запуска следующей
 let nitroPower = 0.02; //мощность двигателя кораблей
-let loopStep = 30; //как быстро появляется корабль с другой стороны, когда вылетает за пределы игрового поля
 let deltaTime = 1, M = 140, m = 8; //скорость, масса звезды, масса корабля без топлива
-let k = canvasSize/2;
+let k = canvasSize/2; //координаты (x == k && y == k) точки притяжения на поле (== центра звезды)
 let stars1 = [], stars2 = [], stars3 = [], stars4 = []; //массивы звезд разных величин
 let stepX = 0.1, stepY = 0.001; //шаг прокрутки фона по осям
 let color1 = 230, color2 = 50, colorStep1 = -1, colorStep2 = 1; //интенсивность мерцания звезд 1 и 3 величины и 2 и 4
 
+//объекты, описывающие корабли
 let wedge = {width: 47, height: 23,
+             //уникальные поля для Wedge, сзязанные с тем, что центр системы координат при прорисовки корабля
+             //расположен не в левом верхнем углу текстуры и с тем, что координаты контрольных точек зацикливания поля,
+             //в отличие от Needle не хранятся в массиве с точками для отрисовки
              originDeltaX: 20, originDeltaY: 4, loopControlPoints: [],
              angle: Math.PI/2, x: 200, y: 210,
+             //массив основных элементов прорисовки (41 стр. -- дуг),
+             //координат кончика пламени из сопла на разных этапах работы двигателя и поле-индикатор этих этапов
              d: [], nitro: [], nitroState: 0,
-             double: false, doubleSide: [],
+             double: false, doubleSide: [], //поля для зацикливания поля
              alive: true, fuelLevel: 3000, shotsNumber: 33, lastShotPause: rechargeTime,
              weight: m + 10, Fx: 0, Fy: 0, R: 0, ax: 0, ay: 0,
              speedX: 0, speedY: 0},
@@ -31,6 +38,7 @@ let wedge = {width: 47, height: 23,
               weight: m + 10, Fx: 0, Fy: 0, R: 0, ax: 0, ay: 0,
               speedX: 0, speedY: 0};
 
+//координаты ключевых элементов (в основном точек) кораблей: для прорисовки, отслеживания попадания и зацикливания поля
 function shipsInit() {
     wedge.d.push({x: 12, y: -19, r: 19, a1: Math.acos(1/Math.sqrt(10)), a2: Math.acos(-14/Math.sqrt(365))});
     wedge.d.push({x: 4, y: 12, r: 19, a1: -Math.acos(-1/Math.sqrt(10)), a2: -Math.acos(14/Math.sqrt(365))});
@@ -64,6 +72,7 @@ function shipsInit() {
     needle.nitro.push({x: -22, y: 9});
 }
 
+//мины на звезде
 shots.push({owner: 2, x: 400, y: 390,
             lifeTime: 1,
             killer: false, victim: -1,
@@ -89,21 +98,26 @@ document.addEventListener("keyup", function(e) {
     keys[e.keyCode] = false;
 });
 
+//Отслеживание нажатия и отжатия клавиш
 function keysControl() {
+    //A ▼ -- поворот Wedge по часовой стрелке
     if (keys[65] && wedge.alive) {
         wedge.angle -= rotationAngle;
         while (wedge.angle < 0) wedge.angle += 2 * Math.PI;
     }
+    //D ▼ -- поворот Wedge против часовой стрелки
     if (keys[68] && wedge.alive) {
         wedge.angle += rotationAngle;
         while (wedge.angle > 2 * Math.PI) wedge.angle -= 2 * Math.PI;
     }
+    //W ▼ -- выстрел Wedge
     if (keys[87] && wedge.shotsNumber > 0 && wedge.lastShotPause >= rechargeTime && wedge.alive) {
         let sx = wedge.speedX - (wedge.ax * deltaTime);
         let sy = wedge.speedY - (wedge.ay * deltaTime);
         shots.push({owner: 0, angle: wedge.angle + Math.PI,
                     x: wedge.x + (wedge.width/2 * Math.cos(wedge.angle)) + (4 * Math.cos(wedge.angle)),
                     y: wedge.y + (wedge.width/2 * Math.sin(wedge.angle)) + (shotWidth * Math.sin(wedge.angle)),
+                    //тут происходит расчёт внешней баллистики. Торпеды ведут себя странно, зато физически верно!
                     speedX: (shotSpeed + sx * Math.cos(wedge.angle - Math.acos(sx / Math.sqrt(sx * sx + sy * sy)))) * Math.cos(wedge.angle),
                     speedY: (shotSpeed + sy * Math.cos(wedge.angle - Math.acos(sx / Math.sqrt(sx * sx + sy * sy)))) * Math.sin(wedge.angle),
                     lifeTime: 0,
@@ -112,6 +126,7 @@ function keysControl() {
         wedge.shotsNumber--;
         wedge.lastShotPause = 0;
     }
+    //S ▼ -- включение тяги Wedge
     if (keys[83] && wedge.fuelLevel > 0 && wedge.alive) {
         if (0 <= wedge.angle && wedge.angle <= Math.PI) {
             wedge.Fy += Math.abs(Math.tan(wedge.angle) * Math.sqrt(10 / (1 + Math.tan(wedge.angle) * Math.tan(wedge.angle)))) * nitroPower;
@@ -125,24 +140,29 @@ function keysControl() {
         }
         if (wedge.nitroState == 0) wedge.nitroState = 1;
         wedge.fuelLevel -= 1;
-        wedge.weight = m +  wedge.fuelLevel / 300;
-        if (wedge.fuelLevel <= 0) keys[83] = false;
+        wedge.weight = m +  wedge.fuelLevel / 300; //пересчёт массы при уменьшении количества топлива
+        if (wedge.fuelLevel <= 0) keys[83] = false; //автоматическое отключение двигателя после сгорания всего топлива
     }
+    //S ▲ -- выключение тяги Wedge
     if (!keys[83] && wedge.alive) wedge.nitroState = 0;
+    //L ▼ -- поворот Needle по часовой стрелке
     if (keys[74] && needle.alive) {
         needle.angle -= rotationAngle;
         while (needle.angle < 0) needle.angle += 2 * Math.PI;
     }
+    //J ▼ -- поворот Needle против часовой стрелки
     if (keys[76] && needle.alive) {
         needle.angle += rotationAngle;
         while (needle.angle > 2 * Math.PI) needle.angle -= 2 * Math.PI;
     }
+    //I ▼ -- выстрел Needle
     if (keys[73] && needle.shotsNumber > 0 && needle.lastShotPause >= rechargeTime && needle.alive) {
         let sx = needle.speedX - (needle.ax * deltaTime);
         let sy = needle.speedY - (needle.ay * deltaTime);
         shots.push({owner: 1, angle: needle.angle + Math.PI,
                     x: needle.x + (needle.width/2 * Math.cos(needle.angle)) + (5 * Math.cos(needle.angle)),
                     y: needle.y + (needle.width/2 * Math.sin(needle.angle)) + (shotWidth * Math.sin(needle.angle)),
+                    //тут происходит расчёт внешней баллистики. Торпеды ведут себя странно, зато физически верно!
                     speedX: (shotSpeed + sx * Math.cos(needle.angle - Math.acos(sx / Math.sqrt(sx * sx + sy * sy)))) * Math.cos(needle.angle),
                     speedY: (shotSpeed + sy * Math.cos(needle.angle - Math.acos(sx / Math.sqrt(sx * sx + sy * sy)))) * Math.sin(needle.angle),
                     lifeTime: 0,
@@ -151,6 +171,7 @@ function keysControl() {
         needle.shotsNumber--;
         needle.lastShotPause = 0;
     }
+    //K ▼ -- включение тяги Needle
     if (keys[75] && needle.fuelLevel > 0 && needle.alive) {
         if (0 <= needle.angle && needle.angle <= Math.PI) {
             needle.Fy += Math.abs(Math.tan(needle.angle) * Math.sqrt(10 / (1 + Math.tan(needle.angle) * Math.tan(needle.angle)))) * nitroPower;
@@ -164,15 +185,17 @@ function keysControl() {
         }
         if (needle.nitroState == 0) needle.nitroState = 1;
         needle.fuelLevel -= 1;
-        needle.weight = m +  needle.fuelLevel / 300;
-        if (needle.fuelLevel <= 0) keys[75] = false;
+        needle.weight = m +  needle.fuelLevel / 300; //пересчёт массы при уменьшении количества топлива
+        if (needle.fuelLevel <= 0) keys[75] = false; //автоматическое отключение двигателя после сгорания всего топлива
     }
+    //K ▲ -- выключение тяги Needle
     if (!keys[75] && needle.alive) needle.nitroState = 0;
     wedge.lastShotPause += 10;
     needle.lastShotPause += 10;
     setTimeout(keysControl, 10);
 }
 
+//Отслеживание впущенных торпед (а также взрывов и мин)
 function shotsControl() {
     let l = shots.length;
     for (let i = 0; i < l; i++) {
@@ -182,9 +205,13 @@ function shotsControl() {
                 shots[i].x += shots[i].speedX;
                 shots[i].y += shots[i].speedY;
             }
+            //проверка на попадание в Wedge
             if (wedge.alive) {
                 let n = wedge.d.length;
                 for (let o = 0; o < n; o += 2) {
+                    //здесь и далее встречаются такие пересчёты координат. Связаны они с тем, что в целях экономии времени на постоянный пересчёт
+                    //координат ключевых элементов кораблей при отрисовке они хранятся в относительной системе координат,
+                    //которая задаётся ctx.translate() и ctx.rotate() в функции draw();
                     let wrx1 = (wedge.d[o].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
                     let wry1 = (wedge.d[o].x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wedge.d[o].y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y;
                     let wrx2 = (wedge.d[o+1].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.d[o+1].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
@@ -198,6 +225,7 @@ function shotsControl() {
                     }
                 }
             }
+            //проверка на попадание в Needle (трассировка горизонтального луча)
             if (needle.alive) {
                 let n = needle.d.length - 2, c = false, j = n - 1;
                 for (let o = 0; o < n; o++) {
@@ -216,12 +244,14 @@ function shotsControl() {
                     needle.alive = false;
                 }
             }
+        //удаление отживших (пролетевших и взорвавшихся) выстрелов
         } else if (shots[i].explosionPause >= shotMaximumExlposionPause) {
             shots.splice(i, 1);
             i--;
             l--;
         }
     }
+    //проверка пересечения контуров кораблей (== столкновения)
     if (wedge.alive && needle.alive) {
         l = needle.d.length;
         let n = wedge.d.length;
@@ -247,12 +277,14 @@ function shotsControl() {
     setTimeout(shotsControl, 10);
 }
 
-//Сброс игры в случае смерти одного из кораблей
+//Сброс игры в случае смерти хотя бы одного из кораблей
 function automaticUpdate() {
     let e = true;
+    //проверка отсутсвия анимируемых сейчас взрывов
     for (let s of shots)
         if (s.explosionPause > 0 && s.explosionPause < shotMaximumExlposionPause)
             e = false;
+    //переопределение ключевых изменяющих значение переменных
     if ((!wedge.alive || !needle.alive) && e) {
         wedge.nitroState = 0;
         needle.nitroState = 0;
@@ -292,7 +324,7 @@ function automaticUpdate() {
 
 //Гравитационное влияние звезды на корабли
 function gravityStep() {
-    wedge.R = Math.sqrt((wedge.x - k) * (wedge.x - k) + (wedge.y - k) * (wedge.y - k)); //расстояние между кораблем и звездой
+    wedge.R = Math.sqrt((wedge.x - k) * (wedge.x - k) + (wedge.y - k) * (wedge.y - k)); //расстояние между Wedge и звездой
     if (wedge.R > 4) {
         wedge.Fx += -(wedge.x - k) / Math.sqrt(wedge.R) * M / (wedge.R * wedge.R); // Fx′ = −(x−x′)/√r × M/r²,
         wedge.Fy += -(wedge.y - k) / Math.sqrt(wedge.R) * M / (wedge.R * wedge.R); // Fy′ = −(y−y′)/√r × M/r²
@@ -304,7 +336,7 @@ function gravityStep() {
         wedge.y += wedge.speedY * deltaTime + wedge.ay * deltaTime * deltaTime / 2; //y* = y = vy·Δt + ay·Δt²/2
         wedge.Fx =  wedge.Fy = 0;
     }
-    needle.R = Math.sqrt((needle.x - k) * (needle.x - k) + (needle.y - k) * (needle.y - k));
+    needle.R = Math.sqrt((needle.x - k) * (needle.x - k) + (needle.y - k) * (needle.y - k)); //расстояние между Needle и звездой
     if (needle.R > 4) {
         needle.Fx += -(needle.x - k) / Math.sqrt(needle.R) * M / (needle.R * needle.R); // Fx′ = −(x−x′)/√r × M/r²,
         needle.Fy += -(needle.y - k) / Math.sqrt(needle.R) * M / (needle.R * needle.R); // Fy′ = −(y−y′)/√r × M/r²
@@ -317,9 +349,11 @@ function gravityStep() {
         needle.Fx =  needle.Fy = 0;
     }
 }
-//Зацикливание движения корабля и выстрелов при вылете за пределы игрового поля
+
+//Зацикливание движения кораблей и выстрелов при вылете за пределы игрового поля
 function isLoop() {
     wedge.doubleSide.length = 0;
+    //проверка координат контрольных точек Wedge
     for (let wlcp of wedge.loopControlPoints) {
         let wlcpx = (wlcp.x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wlcp.y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
         let wlcpy = (wlcp.x - wedge.originDeltaX) * Math.sin(wedge.angle) + (wlcp.y - wedge.originDeltaY) * Math.cos(wedge.angle) + wedge.y;
@@ -340,6 +374,7 @@ function isLoop() {
             if (wedge.doubleSide.indexOf(3) == -1) wedge.doubleSide.push(3);
         }
     }
+    //отдельая проверка координат кончика языка пламени из сопла как отдельной, не всегда активной, контрольной точки для Wedge
     if (wedge.nitroState > 0) {
         let i = Math.floor(wedge.nitroState/5);
         let wnrx = (wedge.nitro[i].x - wedge.originDeltaX) * Math.cos(wedge.angle) - (wedge.nitro[i].y - wedge.originDeltaY) * Math.sin(wedge.angle) + wedge.x;
@@ -361,6 +396,7 @@ function isLoop() {
             if (wedge.doubleSide.indexOf(3) == -1) wedge.doubleSide.push(3);
         }
     }
+    //сброс периода в координатах Wedge
     if (wedge.x > canvasSize) {
         wedge.x -= canvasSize;
         wedge.doubleSide[wedge.doubleSide.indexOf(0)] = 1;
@@ -377,6 +413,7 @@ function isLoop() {
         wedge.y += canvasSize;
         wedge.doubleSide[wedge.doubleSide.indexOf(3)] = 2;
     }
+    //проверка координат контрольных точек Needle
     let n = needle.d.length;
     needle.doubleSide.length = 0;
     for (let i = 0; i < n; i += 4) {
@@ -399,6 +436,7 @@ function isLoop() {
             if (needle.doubleSide.indexOf(3) == -1) needle.doubleSide.push(3);
         }
     }
+    //отдельая проверка координат кончика языка пламени из сопла как отдельной, не всегда активной, контрольной точки для Needle
     if (needle.nitroState > 0) {
         let i = Math.floor(needle.nitroState/5);
         let nnrx = (needle.nitro[i].x - needle.width/2) * Math.cos(needle.angle) - (needle.nitro[i].y - needle.height/2) * Math.sin(needle.angle) + needle.x;
@@ -420,6 +458,7 @@ function isLoop() {
             if (needle.doubleSide.indexOf(3) == -1) needle.doubleSide.push(3);
         }
     }
+    //сброс периода в координатах Needle
     if (needle.x > canvasSize) {
         needle.x -= canvasSize;
         needle.doubleSide[needle.doubleSide.indexOf(0)] = 1;
@@ -436,6 +475,7 @@ function isLoop() {
         needle.y += canvasSize;
         needle.doubleSide[needle.doubleSide.indexOf(3)] = 2;
     }
+    //зацикливание выстрелов
     for (let s of shots) {
         if (s.x >= canvasSize + shotWidth) s.x = 0;
         if (s.x <= -shotWidth) s.x = canvasSize;
@@ -455,19 +495,22 @@ function starsGeneration() {
     for (let i = 0; i < 70; i++)
         stars3.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
 }
+
 //Рисование объектов на холсте
 function draw() {
     expensivePlanetarium();
     drawShots();
+    //основная прорисовка Wedge
     if (wedge.alive) {
         ctx.save();
         ctx.translate(wedge.x, wedge.y);
         ctx.rotate(wedge.angle);
         ctx.translate(-wedge.originDeltaX, -wedge.originDeltaY);
         if (wedge.nitroState > 0 && wedge.nitroState <= 24) wedge.nitroState++;
-        if (wedge.nitroState == 25) wedge.nitroState = 16;
+        if (wedge.nitroState == 25) wedge.nitroState = 16;  //мерцание нитро
         drawWedge();
         ctx.restore();
+        //дублирующия прорисовка в случае частичного выхода за границы поля для Wedge
         if (wedge.double) {
             for (let ds of wedge.doubleSide) {
                 ctx.save();
@@ -483,15 +526,17 @@ function draw() {
             wedge.double = false;
         }
     }
+    //основная прорисовка Needle
     if (needle.alive) {
         ctx.save();
         ctx.translate(needle.x, needle.y);
         ctx.rotate(needle.angle);
         ctx.translate(-needle.width/2, -needle.height/2);
         if (needle.nitroState > 0 && needle.nitroState <= 24) needle.nitroState++;
-        if (needle.nitroState == 25) needle.nitroState = 16;
+        if (needle.nitroState == 25) needle.nitroState = 16; //мерцание нитро
         drawNeedle();
         ctx.restore();
+        //дублирующия прорисовка в случае частичного выхода за границы поля для Needle
         if (needle.double) {
             for (let ds of needle.doubleSide) {
                 ctx.save();
@@ -500,29 +545,25 @@ function draw() {
                 if (ds == 2) ctx.translate(needle.x, needle.y - canvasSize);
                 if (ds == 3) ctx.translate(needle.x, needle.y + canvasSize);
                 ctx.rotate(needle.angle);
-                ctx.translate(- needle.width/2, - needle.height/2);
+                ctx.translate(-needle.width/2, -needle.height/2);
                 drawNeedle();
                 ctx.restore();
             }
             needle.double = false;
         }
     }
-    //вращение звезды
+    //прорисовка звезды
+    ctx.save();
+    ctx.translate(canvasSize/2, canvasSize/2);
+    ctx.rotate(Math.PI/4);
+    ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1);
     if (centerState < 20 || centerState == 40) {
-        ctx.save();
-        ctx.translate(canvasSize/2, canvasSize/2);
-        ctx.rotate(Math.PI/4);
-        ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1);
         drawSun(6,2);
         ctx.restore();
         drawSun(10,2);
         if (centerState < 20) centerState++;
         else centerState = 1;
     } else {
-        ctx.save();
-        ctx.translate(canvasSize/2, canvasSize/2);
-        ctx.rotate(Math.PI/4);
-        ctx.translate(-canvasSize/2 + 1 , -canvasSize/2 - 1);
         drawSun(10,2);
         ctx.restore();
         drawSun(6,2);
@@ -591,21 +632,30 @@ function expensivePlanetarium() {
     if (color2 < 50 || color2 > 230) colorStep2 *= -1;
 }
 
+//Прорисовка выстрелов и взрывов (но не мин)
 function drawShots() {
     ctx.fillStyle = "white";
     for (let s of shots) {
+        //трёхэтапная прорисовка выстрелов-убийц (попавших в цель)
+        //первый этап -- белый цвет, густой взрыв
+        //второй -- серебристый цвет, густота меньше
+        //третий -- серый цвет, минимальная густота
         if (s.killer) {
+            //расчёт первого этапа
             if (!s.exploded) {
+                //расчёт густоты взрыва в зависимости от количества оставшегося топлива
                 let n = 100;
                 if (s.victim == 0) n = 50 + (50 * wedge.fuelLevel / 3000);
                 else if (s.victim == 1) n = 50 + (50 * needle.fuelLevel / 3000);
                 else if (s.victim == 2) n = 50 + (50 * wedge.fuelLevel / 3000) + (50 * needle.fuelLevel / 3000);
+                //подбор координат осколков в круговой области вокруг точки попадания
                 for (let i = 0; i < n; i++) {
                     let x = 0, y = 0;
                     while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
                         x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
                         y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
                     }
+                    //зацикливание игрового поля для взрыва
                     if (x >= canvasSize) x -= canvasSize;
                     if (x <= 0) x += canvasSize;
                     if (y >= canvasSize) y -= canvasSize;
@@ -614,19 +664,23 @@ function drawShots() {
                 }
                 s.exploded = true;
             }
+            //расчёт второго этапа
             if (s.explosionPause >= 10 && s.explosionPause < 20) {
                 if (s.explosionPause == 10) {
                     s.e.length = 0;
+                    //расчёт густоты взрыва в зависимости от количества оставшегося топлива
                     let n = 75;
                     if (s.victim == 0) n = 38 + (37 * wedge.fuelLevel / 3000);
                     else if (s.victim == 1) n = 38 + (37 * needle.fuelLevel / 3000);
                     else if (s.victim == 2) n = 38 + (37 * wedge.fuelLevel / 3000) + (37 * needle.fuelLevel / 3000);
+                    //подбор координат осколков в круговой области вокруг точки попадания
                     for (let i = 0; i < n; i++) {
                         let x = 0, y = 0;
                         while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
                             x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
                             y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
                         }
+                        //зацикливание игрового поля для взрыва
                         if (x >= canvasSize) x -= canvasSize;
                         if (x <= 0) x += canvasSize;
                         if (y >= canvasSize) y -= canvasSize;
@@ -636,19 +690,23 @@ function drawShots() {
                 }
                 ctx.fillStyle = "silver";
             }
+            //рассчёт третьего этапа
             if (s.explosionPause >= 20) {
                 if (s.explosionPause == 20) {
                     s.e.length = 0;
+                    //расчёт густоты взрыва в зависимости от количества оставшегося топлива
                     let n = 50;
                     if (s.victim == 0) n = 25 + (25 * wedge.fuelLevel / 3000);
                     else if (s.victim == 1) n = 25 + (25 * needle.fuelLevel / 3000);
                     else if (s.victim == 2) n = 25 + (25 * wedge.fuelLevel / 3000) + (25 * needle.fuelLevel / 3000);
+                    //подбор координат осколков в круговой области вокруг точки попадания
                     for (let i = 0; i < n; i++) {
                         let x = 0, y = 0;
                         while ((x - s.x) * (x - s.x) + (y - s.y) * (y - s.y) > 1250) {
                             x = Math.floor(Math.floor(Math.random() * ((s.x + 50 * Math.sqrt(2) / 2) - (s.x - 50 * Math.sqrt(2) / 2))) + (s.x - 50 * Math.sqrt(2) / 2));
                             y = Math.floor(Math.floor(Math.random() * ((s.y + 50 * Math.sqrt(2) / 2) - (s.y - 50 * Math.sqrt(2) / 2))) + (s.y - 50 * Math.sqrt(2) / 2));
                         }
+                        //зацикливание игрового поля для взрыва
                         if (x >= canvasSize) x -= canvasSize;
                         if (x <= 0) x += canvasSize;
                         if (y >= canvasSize) y -= canvasSize;
@@ -658,21 +716,26 @@ function drawShots() {
                 }
                 ctx.fillStyle = "grey";
             }
+            //прорисовка осколков
             let n = s.e.length;
             for (let i = 0; i < n; i++) ctx.fillRect(s.e[i].x, s.e[i].y, 2, 2);
             ctx.fillStyle = "white";
             s.explosionPause++;
+        //прорисовка обычных выстрелов в полёте
         } else if (s.lifeTime < shotMaximumLifeTime && s.owner != 2) {
             ctx.save();
             ctx.translate(s.x, s.y);
             ctx.rotate(s.angle);
             ctx.fillRect(0, 0, shotWidth, shotHeight);
             ctx.restore();
+        //прорисовка мини-взрыва при самодетонации никуда не попавших торпед
         } else if (s.owner != 2) {
             if (!s.exploded) {
+                //выбор координат осколков
                 for (let i = 0; i < 3; i++) {
                     s.e.push({x: Math.floor(Math.floor(Math.random() * ((s.x + 10) - (s.x - 10))) + (s.x - 10)),
                               y: Math.floor(Math.floor(Math.random() * ((s.y + 10) - (s.y - 10))) + (s.y - 10))});
+                    //зацикливание поля
                     if (s.x >= canvasSize) s.x -= canvasSize;
                     if (s.x <= 0) s.x += canvasSize;
                     if (s.y >= canvasSize) s.y -= canvasSize;
@@ -680,16 +743,19 @@ function drawShots() {
                 }
                 s.exploded = true;
             }
+            //прорисовка осколков
             for (let i = 0; i < 3; i++) ctx.fillRect(s.e[i].x, s.e[i].y, 2, 2);
             s.explosionPause += 3;
         }
     }
 }
 
+//Отрисовка Wedge
 function drawWedge() {
     ctx.fillStyle = "black";
     ctx.strokeStyle = "white";
     ctx.moveTo(0, 0);
+    //отрисовка 6 дуг (и одной автоматически добавляющейся линии), из которых состоит Wedge
     let n = wedge.d.length;
     for (let i = 0; i < n; i += 2) {
         ctx.beginPath();
@@ -699,6 +765,7 @@ function drawWedge() {
         ctx.fill();
         ctx.stroke();
     }
+    //отрисовка огня из сопла при запущеном двигателе с учётом времени его работы с момента запуска
     if (wedge.nitroState > 0) {
         ctx.beginPath();
         ctx.moveTo(0, 0);
@@ -710,16 +777,19 @@ function drawWedge() {
     }
 }
 
+//Отрисовка Needle
 function drawNeedle() {
     ctx.fillStyle = "black";
     ctx.strokeStyle = "white";
     ctx.beginPath();
     ctx.moveTo(0, 0);
+    //отрисовка контура Needle
     let n = needle.d.length;
     for (let i = 1; i < n - 2; i++) ctx.lineTo(needle.d[i].x, needle.d[i].y);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
+    //добавление внутренних линий
     ctx.beginPath();
     ctx.moveTo(needle.d[n-2].x, needle.d[n-2].y);
     ctx.lineTo(needle.d[2].x, needle.d[2].y);
@@ -728,6 +798,7 @@ function drawNeedle() {
     ctx.moveTo(needle.d[n-2].x, needle.d[n-2].y);
     ctx.closePath();
     ctx.stroke();
+    //отрисовка огня из сопла при запущеном двигателе с учётом времени его работы с момента запуска
     if (needle.nitroState > 0) {
         ctx.beginPath();
         ctx.moveTo(0, 2);
