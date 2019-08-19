@@ -3,17 +3,17 @@ var ctx = cvs.getContext("2d");
 var canvasSize = 800;
 
 let shotWidth = 6, shotHeight = 1;
-let rotationAngle = Math.PI/50;
+let rotationAngle = Math.PI/50; //угол поворота кораблей при вращении по и против часовой стрелки
 let centerState = 0;
 let keys = [], shots = [];
 let shotMaximumLifeTime = 4000, shotMaximumExlposionPause = 30, shotSpeed = 1, rechargeTime = 500;
-let nitroPower = 0.02;
-let loopStep = 30;
-let deltaTime = 1, M = 140, m = 8;
+let nitroPower = 0.02; //мощность двигателя кораблей
+let loopStep = 30; //как быстро появляется корабль с другой стороны, когда вылетает за пределы игрового поля
+let deltaTime = 1, M = 140, m = 8; //скорость, масса звезды, масса корабля без топлива
 let k = canvasSize/2;
-let stars1 = [], stars2 = [], stars3 = [], stars4 = [];
-let stepX = 0.1, stepY = 0.001;
-let color1 = 230, color2 = 50, colorStep1 = -1, colorStep2 = 1;
+let stars1 = [], stars2 = [], stars3 = [], stars4 = []; //массивы звезд разных величин
+let stepX = 0.1, stepY = 0.001; //шаг прокрутки фона по осям
+let color1 = 230, color2 = 50, colorStep1 = -1, colorStep2 = 1; //интенсивность мерцания звезд 1 и 3 величины и 2 и 4
 
 let wedge = {width: 47, height: 23,
              originDeltaX: 20, originDeltaY: 4,
@@ -220,6 +220,7 @@ function shotsControl() {
     setTimeout(shotsControl, 10);
 }
 
+//Сброс игры в случае смерти одного из кораблей
 function automaticUpdate() {
     let e = true;
     for (let s of shots)
@@ -262,8 +263,9 @@ function automaticUpdate() {
     setTimeout(automaticUpdate, 2000);
 }
 
+//Гравитационное влияние звезды на корабли
 function gravityStep() {
-    wedge.R = Math.sqrt((wedge.x - k) * (wedge.x - k) + (wedge.y - k) * (wedge.y - k));
+    wedge.R = Math.sqrt((wedge.x - k) * (wedge.x - k) + (wedge.y - k) * (wedge.y - k)); //расстояние между кораблем и звездой
     if (wedge.R > 4) {
         wedge.Fx += -(wedge.x - k) / Math.sqrt(wedge.R) * M / (wedge.R * wedge.R); // Fx′ = −(x−x′)/√r × M/r²,
         wedge.Fy += -(wedge.y - k) / Math.sqrt(wedge.R) * M / (wedge.R * wedge.R); // Fy′ = −(y−y′)/√r × M/r²
@@ -288,7 +290,7 @@ function gravityStep() {
         needle.Fx =  needle.Fy = 0;
     }
 }
-
+//Зацикливание движения корабля и выстрелов при вылете за пределы игрового поля
 function isLoop() {
   if (wedge.x > canvasSize + loopStep) wedge.x = -loopStep;
   if (wedge.x < -loopStep) wedge.x = canvasSize + loopStep;
@@ -306,6 +308,7 @@ function isLoop() {
   }
 }
 
+//Случайная генерация массивов звездного неба
 function starsGeneration() {
     for (let i = 0; i < 15; i++)
         stars1.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
@@ -316,7 +319,7 @@ function starsGeneration() {
     for (let i = 0; i < 70; i++)
         stars3.push({x: Math.floor(Math.random() * 1000 ) + 1, y: Math.floor(Math.random() * 1000) + 1});
 }
-
+//Рисование объектов на холсте
 function draw() {
     expensivePlanetarium();
     drawShots();
@@ -338,6 +341,7 @@ function draw() {
         drawNeedle();
         ctx.restore();
     }
+    //вращение звезды
     if (centerState < 20 || centerState == 40) {
         ctx.save();
         ctx.translate(canvasSize/2, canvasSize/2);
@@ -363,6 +367,7 @@ function draw() {
     requestAnimationFrame(draw);
 }
 
+//Мигание звездного неба, сначала загораются звезды 1 и 3 величины, потом 2 и 4. Рисование неба
 function expensivePlanetarium() {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, 800, 800);
@@ -512,6 +517,7 @@ function drawShots() {
     }
 }
 
+//Отрисовка четырехконечной звезды
 function drawSun(l, r) {
     ctx.fillStyle = "white";
     ctx.strokeStyle = "white";
@@ -581,6 +587,7 @@ function drawNeedle() {
     }
 }
 
+//Старт игры
 shipsInit();
 starsGeneration();
 draw();
