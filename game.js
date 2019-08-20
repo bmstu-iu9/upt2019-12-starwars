@@ -560,10 +560,10 @@ function draw() {
     if (centerState < 20 || centerState == 40) {
         drawSun(6,2);
         ctx.restore();
-        drawSun(10,2);
+        drawSun(10,2);//звезда наслаивается на другую звезду, чтобы создать восьмиконечную звездву
         if (centerState < 20) centerState++;
         else centerState = 1;
-    } else {
+    } else { //отрисовка повернутой звезды, чтобы создать эффект вращения/мерцания
         drawSun(10,2);
         ctx.restore();
         drawSun(6,2);
