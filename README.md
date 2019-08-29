@@ -1,4 +1,4 @@
-# [Spacewar!](https://bmstu-iu9.github.io/upt2019-12-starwars/)
+# [Spacewar!](https://bmstu-iu9.github.io/utp2019-12-starwars/)
 
 ###### интерпретация игры 1962 года
 
